@@ -4,6 +4,7 @@ import BookCard from "../components/BookCard";
 import atomicHabits from "../assets/books/atomic-habits.jpg";
 import harryPotter from "../assets/books/harry-potter.jpg";
 import richDad from "../assets/books/rich-dad.jpg";
+import Navbar from "../components/Navbar";
 
 function Home() {
   const books = [
@@ -48,9 +49,9 @@ function Home() {
           {books.map((book) => (
             <BookCard
               key={book.id}
+              id={book.id}
               title={book.title}
               author={book.author}
-              image={book.image}
             />
           ))}
         </div>
