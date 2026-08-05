@@ -9,6 +9,8 @@ const bookRoutes = require("./routes/bookRoutes");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 // Middleware
 app.use(cors());
@@ -30,7 +32,8 @@ app.use("/api/books", bookRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/reviews", reviewRoutes);
-
+app.use("/api/admin", adminRoutes);
+app.use("/api/upload", uploadRoutes);
 // Server
 const PORT = process.env.PORT || 5000;
 

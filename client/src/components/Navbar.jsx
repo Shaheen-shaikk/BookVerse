@@ -9,7 +9,6 @@ function Navbar() {
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
     navigate("/login");
   };
 
@@ -60,12 +59,19 @@ function Navbar() {
           Home
         </Link>
 
-        <Link
-          to="/books"
-          style={linkStyle("/books")}
-        >
+        <Link to="/books" style={linkStyle("/books")}>
           Books
         </Link>
+
+        <Link to="/explore" style={linkStyle("/explore")}>
+          Explore
+        </Link>
+        <Link
+  to="/free-books"
+  style={linkStyle("/free-books")}
+>
+  Free Books
+</Link>
 
         {!user && (
           <>

@@ -19,9 +19,28 @@ function Admin() {
   const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState("");
 
+  const [stats, setStats] = useState({
+    books: 0,
+    users: 0,
+    reviews: 0,
+    favorites: 0,
+  });
+const [selectedImage, setSelectedImage] = useState(null);
+const [uploading, setUploading] = useState(false);
+
   useEffect(() => {
     fetchBooks();
+    fetchStats();
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      const res = await API.get("/admin/stats");
+      setStats(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const fetchBooks = async () => {
     try {
@@ -38,22 +57,68 @@ function Admin() {
       [e.target.name]: e.target.value,
     });
   };
+  const uploadImage = async () => {
+  if (!selectedImage) return "";
+
+  try {
+    setUploading(true);
+
+    const formData = new FormData();
+
+    formData.append("image", selectedImage);
+
+    const res = await API.post(
+      "/upload/image",
+      formData,
+      {
+        headers: {
+          "Content-Type":
+            "multipart/form-data",
+        },
+      }
+    );
+
+    setUploading(false);
+
+    return res.data.imageUrl;
+  } catch (err) {
+    console.log(err);
+    alert("Image Upload Failed");
+    setUploading(false);
+    return "";
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
+      let imageUrl = book.image;
+
+if (selectedImage) {
+  imageUrl = await uploadImage();
+}
+
+const updatedBook = {
+  ...book,
+  image: imageUrl,
+};
       if (editingId) {
-        await API.put(`/books/${editingId}`, book);
+        await API.put(
+  `/books/${editingId}`,
+  updatedBook
+);
         alert("Book Updated Successfully");
       } else {
-        await API.post("/books", book);
+        await API.post("/books", updatedBook);
         alert("Book Added Successfully");
       }
 
       setBook(emptyBook);
       setEditingId(null);
+
       fetchBooks();
+      fetchStats();
     } catch (err) {
       console.log(err);
     }
@@ -86,6 +151,7 @@ function Admin() {
     try {
       await API.delete(`/books/${id}`);
       fetchBooks();
+      fetchStats();
     } catch (err) {
       console.log(err);
     }
@@ -107,45 +173,71 @@ function Admin() {
 
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: "30px",
-          marginBottom: "30px",
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(180px,1fr))",
+          gap: "20px",
+          maxWidth: "900px",
+          margin: "30px auto",
         }}
       >
         <div
           style={{
             background: "#4f46e5",
             color: "white",
-            padding: "20px",
-            borderRadius: "10px",
-            width: "180px",
+            padding: "25px",
+            borderRadius: "12px",
+            textAlign: "center",
           }}
         >
-          <h2>{books.length}</h2>
-          <p>Total Books</p>
+          <h1>{stats.books}</h1>
+          <p>📚 Total Books</p>
         </div>
 
         <div
           style={{
             background: "#16a34a",
             color: "white",
-            padding: "20px",
-            borderRadius: "10px",
-            width: "180px",
+            padding: "25px",
+            borderRadius: "12px",
+            textAlign: "center",
           }}
         >
-          <h2>
-            {[...new Set(books.map((b) => b.category))].length}
-          </h2>
-          <p>Categories</p>
+          <h1>{stats.users}</h1>
+          <p>👥 Users</p>
+        </div>
+
+        <div
+          style={{
+            background: "#f59e0b",
+            color: "white",
+            padding: "25px",
+            borderRadius: "12px",
+            textAlign: "center",
+          }}
+        >
+          <h1>{stats.reviews}</h1>
+          <p>⭐ Reviews</p>
+        </div>
+
+        <div
+          style={{
+            background: "#dc2626",
+            color: "white",
+            padding: "25px",
+            borderRadius: "12px",
+            textAlign: "center",
+          }}
+        >
+          <h1>{stats.favorites}</h1>
+          <p>❤️ Favorites</p>
         </div>
       </div>
 
       <form
         onSubmit={handleSubmit}
         style={{
-          width: "600px",
+          width: "650px",
           margin: "auto",
           display: "flex",
           flexDirection: "column",
@@ -185,12 +277,28 @@ function Admin() {
         />
 
         <input
-          name="image"
-          placeholder="Image URL"
-          value={book.image}
-          onChange={handleChange}
-        />
+  type="file"
+  accept="image/*"
+  onChange={(e) =>
+    setSelectedImage(e.target.files[0])
+  }
+/>
 
+{selectedImage && (
+  <img
+    src={URL.createObjectURL(selectedImage)}
+    alt="Preview"
+    style={{
+      width: "180px",
+      borderRadius: "10px",
+      margin: "10px auto",
+    }}
+  />
+)}
+
+{uploading && (
+  <p>Uploading Image...</p>
+)}
         <input
           name="rating"
           placeholder="Rating"
@@ -228,7 +336,7 @@ function Admin() {
 
       <input
         type="text"
-        placeholder="Search by title, author or category..."
+        placeholder="Search books..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         style={{
@@ -239,67 +347,136 @@ function Admin() {
         }}
       />
 
-      {filteredBooks.map((book) => (
-        <div
-          key={book._id}
-          style={{
-            width: "700px",
-            margin: "20px auto",
-            border: "1px solid #ddd",
-            borderRadius: "10px",
-            padding: "20px",
-          }}
-        >
-          <h2>{book.title}</h2>
-
-          <p>
-            <strong>Author:</strong> {book.author}
-          </p>
-
-          <p>
-            <strong>Category:</strong> {book.category}
-          </p>
-
-          <p>
-            <strong>Rating:</strong> ⭐ {book.rating}
-          </p>
-
-          <div
+      <div>
+                {filteredBooks.length === 0 ? (
+          <h3
             style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "10px",
-              marginTop: "15px",
+              textAlign: "center",
             }}
           >
-            <button
-              onClick={() => editBook(book)}
+            No Books Found 📚
+          </h3>
+        ) : (
+          filteredBooks.map((book) => (
+            <div
+              key={book._id}
               style={{
-                background: "#2563eb",
-                color: "white",
-                border: "none",
-                padding: "10px 20px",
-                borderRadius: "8px",
+                width: "750px",
+                margin: "20px auto",
+                border: "1px solid #ddd",
+                borderRadius: "12px",
+                padding: "20px",
+                display: "flex",
+                gap: "20px",
+                alignItems: "center",
+                boxShadow:
+                  "0 2px 10px rgba(0,0,0,.1)",
               }}
             >
-              ✏ Edit
-            </button>
+              <img
+                src={
+                  book.image ||
+                  "https://via.placeholder.com/120x170?text=Book"
+                }
+                alt={book.title}
+                style={{
+                  width: "120px",
+                  height: "170px",
+                  objectFit: "cover",
+                  borderRadius: "10px",
+                }}
+              />
 
-            <button
-              onClick={() => deleteBook(book._id)}
-              style={{
-                background: "#dc2626",
-                color: "white",
-                border: "none",
-                padding: "10px 20px",
-                borderRadius: "8px",
-              }}
-            >
-              🗑 Delete
-            </button>
-          </div>
-        </div>
-      ))}
+              <div
+                style={{
+                  flex: 1,
+                  textAlign: "left",
+                }}
+              >
+                <h2>{book.title}</h2>
+
+                <p>
+                  <strong>Author:</strong>{" "}
+                  {book.author}
+                </p>
+
+                <p>
+                  <strong>Category:</strong>{" "}
+                  {book.category}
+                </p>
+
+                <p>
+                  <strong>Rating:</strong> ⭐{" "}
+                  {book.rating}
+                </p>
+
+                <p>
+                  <strong>Published:</strong>{" "}
+                  {book.publishedYear}
+                </p>
+
+                <p>
+                  <strong>Pages:</strong>{" "}
+                  {book.pages}
+                </p>
+
+                <p>
+                  <strong>Language:</strong>{" "}
+                  {book.language}
+                </p>
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "15px",
+                    marginTop: "15px",
+                  }}
+                >
+                  <button
+                    onClick={() =>
+                      editBook(book)
+                    }
+                    style={{
+                      background:
+                        "#2563eb",
+                      color: "white",
+                      border: "none",
+                      padding:
+                        "10px 20px",
+                      borderRadius:
+                        "8px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ✏ Edit
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      deleteBook(
+                        book._id
+                      )
+                    }
+                    style={{
+                      background:
+                        "#dc2626",
+                      color: "white",
+                      border: "none",
+                      padding:
+                        "10px 20px",
+                      borderRadius:
+                        "8px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    🗑 Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
