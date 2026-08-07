@@ -15,6 +15,7 @@ import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MyBooks from "./pages/MyBooks";
 import ReaderFeedback from "./pages/ReaderFeedback";
+import EditBook from "./pages/EditBook";
 
 function App() {
   return (
@@ -79,6 +80,14 @@ function App() {
   element={
     <ProtectedRoute>
       <ReaderFeedback />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/edit-book/:id"
+  element={
+    <ProtectedRoute>
+      <EditBook />
     </ProtectedRoute>
   }
 />

@@ -2,21 +2,46 @@ import { useEffect, useState } from "react";
 import API from "../services/api";
 
 function Profile() {
-  const [favorites, setFavorites] = useState([]);
+  const localUser = JSON.parse(localStorage.getItem("user"));
+
   const [user, setUser] = useState(null);
+  const [favorites, setFavorites] = useState([]);
+
+  const [edit, setEdit] = useState(false);
+
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+  });
 
   useEffect(() => {
-    const currentUser = JSON.parse(localStorage.getItem("user"));
-
-    if (currentUser) {
-      setUser(currentUser);
-      fetchFavorites(currentUser._id);
+    if (localUser) {
+      fetchProfile();
+      fetchFavorites();
     }
   }, []);
 
-  const fetchFavorites = async (userId) => {
+  const fetchProfile = async () => {
     try {
-      const res = await API.get(`/books/favorites/${userId}`);
+      const res = await API.get(`/users/${localUser.id}`);
+
+      setUser(res.data);
+
+      setForm({
+        name: res.data.name,
+        email: res.data.email,
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchFavorites = async () => {
+    try {
+      const res = await API.get(
+        `/books/favorites/${localUser.id}`
+      );
+
       setFavorites(res.data);
     } catch (err) {
       console.log(err);
@@ -25,13 +50,41 @@ function Profile() {
 
   const removeFavorite = async (bookId) => {
     try {
-      await API.delete(`/books/favorite/${bookId}/${user._id}`);
+      await API.delete(
+        `/books/favorite/${bookId}/${localUser.id}`
+      );
 
       setFavorites((prev) =>
         prev.filter((book) => book._id !== bookId)
       );
 
-      alert("💔 Removed from Favorites");
+      alert("Removed from favorites");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const saveProfile = async () => {
+    try {
+      const res = await API.put(
+        `/users/${localUser.id}`,
+        form
+      );
+
+      setUser(res.data);
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...localUser,
+          name: res.data.name,
+          email: res.data.email,
+        })
+      );
+
+      alert("Profile Updated");
+
+      setEdit(false);
     } catch (err) {
       console.log(err);
     }
@@ -40,7 +93,7 @@ function Profile() {
   if (!user) {
     return (
       <div className="home">
-        <h2>Please Login</h2>
+        <h2>Loading...</h2>
       </div>
     );
   }
@@ -49,7 +102,7 @@ function Profile() {
     <div
       className="home"
       style={{
-        maxWidth: "1000px",
+        maxWidth: "900px",
         margin: "40px auto",
       }}
     >
@@ -57,112 +110,116 @@ function Profile() {
 
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: "20px",
-          margin: "30px 0",
-          flexWrap: "wrap",
-        }}
-      >
-        <div
-          style={{
-            background: "#2563eb",
-            color: "white",
-            padding: "20px",
-            borderRadius: "10px",
-            width: "220px",
-          }}
-        >
-          <h2>{user.name}</h2>
-          <p>User Name</p>
-        </div>
-
-        <div
-          style={{
-            background: "#16a34a",
-            color: "white",
-            padding: "20px",
-            borderRadius: "10px",
-            width: "220px",
-          }}
-        >
-          <h2>{favorites.length}</h2>
-          <p>Favorite Books</p>
-        </div>
-      </div>
-
-      <div
-        style={{
           background: "#fff",
-          border: "1px solid #ddd",
-          borderRadius: "10px",
-          padding: "20px",
-          width: "600px",
-          margin: "0 auto 40px",
+          padding: "30px",
+          borderRadius: "12px",
+          boxShadow: "0 5px 20px rgba(0,0,0,.1)",
         }}
       >
-        <h3>Account Details</h3>
+        <p>
+          <strong>Name:</strong>
+        </p>
+
+        {edit ? (
+          <input
+            value={form.name}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                name: e.target.value,
+              })
+            }
+          />
+        ) : (
+          <p>{user.name}</p>
+        )}
 
         <p>
-          <strong>Name:</strong> {user.name}
+          <strong>Email:</strong>
+        </p>
+
+        {edit ? (
+          <input
+            value={form.email}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                email: e.target.value,
+              })
+            }
+          />
+        ) : (
+          <p>{user.email}</p>
+        )}
+
+        <p>
+          <strong>Role:</strong>
+        </p>
+
+        <p>{user.role}</p>
+
+        <p>
+          <strong>Books Published:</strong>
+        </p>
+
+        <p>{user.booksCount || 0}</p>
+
+        <p>
+          <strong>Favourite Books:</strong>
+        </p>
+
+        <p>{favorites.length}</p>
+
+        <p>
+          <strong>Joined:</strong>
         </p>
 
         <p>
-          <strong>Email:</strong> {user.email}
+          {new Date(user.createdAt).toLocaleDateString()}
         </p>
 
-        <p>
-          <strong>Role:</strong> {user.role}
-        </p>
+        <br />
+
+        {edit ? (
+          <button onClick={saveProfile}>
+            Save Changes
+          </button>
+        ) : (
+          <button
+            onClick={() => setEdit(true)}
+          >
+            Edit Profile
+          </button>
+        )}
       </div>
 
-      <h2>❤️ My Favorite Books</h2>
+      <br />
+
+      <h2>❤️ Favourite Books</h2>
 
       {favorites.length === 0 ? (
-        <h3>No Favorite Books Yet</h3>
+        <h3>No Favourite Books</h3>
       ) : (
         favorites.map((book) => (
           <div
             key={book._id}
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "700px",
-              margin: "20px auto",
-              padding: "20px",
               border: "1px solid #ddd",
               borderRadius: "10px",
+              padding: "20px",
+              marginBottom: "15px",
             }}
           >
-            <div>
-              <h3>{book.title}</h3>
+            <h3>{book.title}</h3>
 
-              <p>
-                <strong>Author:</strong> {book.author}
-              </p>
-
-              <p>
-                <strong>Category:</strong> {book.category}
-              </p>
-
-              <p>
-                ⭐ {book.rating}
-              </p>
-            </div>
+            <p>{book.author}</p>
 
             <button
-              onClick={() => removeFavorite(book._id)}
-              style={{
-                background: "#dc2626",
-                color: "white",
-                border: "none",
-                padding: "10px 18px",
-                borderRadius: "8px",
-                cursor: "pointer",
-              }}
+              onClick={() =>
+                removeFavorite(book._id)
+              }
             >
-              💔 Remove
+              Remove
             </button>
           </div>
         ))

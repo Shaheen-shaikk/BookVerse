@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 function MyBooks() {
+  const navigate = useNavigate();
+
   const user = JSON.parse(localStorage.getItem("user"));
 
   const [books, setBooks] = useState([]);
@@ -12,9 +15,7 @@ function MyBooks() {
 
   const fetchBooks = async () => {
     try {
-      const res = await API.get(
-        `/books/author/${user.id}`
-      );
+      const res = await API.get(`/books/author/${user.id}`);
 
       setBooks(res.data);
     } catch (err) {
@@ -33,7 +34,7 @@ function MyBooks() {
     try {
       await API.delete(`/books/${id}`);
 
-      alert("Book deleted successfully!");
+      alert("📚 Book deleted successfully!");
 
       fetchBooks();
     } catch (err) {
@@ -81,24 +82,55 @@ function MyBooks() {
 
               <h3>{book.title}</h3>
 
-              <p>{book.category}</p>
+              <p>
+                <strong>Category:</strong> {book.category}
+              </p>
 
-              <button
-                onClick={() =>
-                  deleteBook(book._id)
-                }
+              <p>
+                ⭐ {book.rating}
+              </p>
+
+              <div
                 style={{
-                  background: "#dc2626",
-                  color: "white",
-                  border: "none",
-                  padding: "10px",
-                  width: "100%",
-                  borderRadius: "8px",
-                  cursor: "pointer",
+                  display: "flex",
+                  gap: "10px",
+                  marginTop: "15px",
                 }}
               >
-                🗑 Delete
-              </button>
+                <button
+                  onClick={() =>
+                    navigate(`/edit-book/${book._id}`)
+                  }
+                  style={{
+                    flex: 1,
+                    background: "#2563eb",
+                    color: "white",
+                    border: "none",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                  }}
+                >
+                  ✏️ Edit
+                </button>
+
+                <button
+                  onClick={() =>
+                    deleteBook(book._id)
+                  }
+                  style={{
+                    flex: 1,
+                    background: "#dc2626",
+                    color: "white",
+                    border: "none",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                  }}
+                >
+                  🗑 Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>

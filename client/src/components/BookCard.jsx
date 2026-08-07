@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import "../styles/cards.css";
 
 function BookCard({
   id,
@@ -10,81 +11,49 @@ function BookCard({
   publishedYear,
 }) {
   return (
-    <div
-      style={{
-        width: "280px",
-        border: "1px solid #ddd",
-        borderRadius: "12px",
-        overflow: "hidden",
-        background: "#fff",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-        transition: "0.3s",
-        margin: "15px",
-      }}
-    >
-      <img
-        src={
-          image ||
-          "https://via.placeholder.com/280x360?text=Book+Cover"
-        }
-        alt={title}
-        style={{
-          width: "100%",
-          height: "340px",
-          objectFit: "cover",
-        }}
-      />
+    <div className="book-card">
 
-      <div
-        style={{
-          padding: "15px",
-        }}
-      >
-        <h3
-          style={{
-            marginBottom: "10px",
-          }}
-        >
-          {title}
-        </h3>
+      <div className="book-image-container">
 
-        <p>
-          <strong>Author:</strong> {author}
+        <img
+          src={
+            image ||
+            "https://via.placeholder.com/300x420?text=Book"
+          }
+          alt={title}
+          className="book-image"
+        />
+
+        <span className="rating-badge">
+          ⭐ {rating || "0.0"}
+        </span>
+
+        <span className="category-badge">
+          {category || "Book"}
+        </span>
+
+      </div>
+
+      <div className="book-content">
+
+        <h3>{title}</h3>
+
+        <p className="author">
+          ✍ {author}
         </p>
 
-        <p>
-          <strong>Category:</strong>{" "}
-          {category || "Unknown"}
-        </p>
-
-        <p>
-          <strong>⭐ Rating:</strong>{" "}
-          {rating || 0}
-        </p>
-
-        <p>
-          <strong>📅 Published:</strong>{" "}
-          {publishedYear || "N/A"}
+        <p className="published">
+          📅 {publishedYear || "N/A"}
         </p>
 
         <Link to={`/books/${id}`}>
-          <button
-            style={{
-              width: "100%",
-              marginTop: "15px",
-              padding: "10px",
-              background: "#2563eb",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontSize: "16px",
-            }}
-          >
-            📖 Read More
+          <button className="view-btn">
+            View Details →
           </button>
         </Link>
+
       </div>
+
     </div>
   );
 }

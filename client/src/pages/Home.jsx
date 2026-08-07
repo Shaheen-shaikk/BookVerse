@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import API from "../services/api";
+import Hero from "../components/Hero";
 import BookCard from "../components/BookCard";
+import "../styles/home.css";
 
 function Home() {
   const [books, setBooks] = useState([]);
@@ -27,63 +28,75 @@ function Home() {
 
   return (
     <div className="home">
-      <h1>📚 Welcome to BookVerse</h1>
 
-      <p>
-        Discover, explore and read your favorite books.
-      </p>
+      <Hero />
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: "15px",
-          marginBottom: "40px",
-          flexWrap: "wrap",
-        }}
-      >
-        <Link to="/books">
-          <button>📚 My Library</button>
-        </Link>
+      <section className="section">
 
-        <Link to="/explore">
-          <button>🌍 Explore Books</button>
-        </Link>
+        <div className="section-header">
+          <h2>🔥 Latest Books</h2>
+          <p>Recently published books from our authors.</p>
+        </div>
 
-        <Link to="/free-books">
-          <button>📜 Free Books</button>
-        </Link>
-      </div>
+        <div className="book-list">
+          {latestBooks.map((book) => (
+            <BookCard
+              key={book._id}
+              id={book._id}
+              title={book.title}
+              author={book.author}
+              image={book.image}
+            />
+          ))}
+        </div>
 
-      <h2>🆕 Latest Books</h2>
+      </section>
 
-      <div className="book-list">
-        {latestBooks.map((book) => (
-          <BookCard
-            key={book._id}
-            id={book._id}
-            title={book.title}
-            author={book.author}
-            image={book.image}
-          />
-        ))}
-      </div>
+      <section className="section">
 
-      <br />
+        <div className="section-header">
+          <h2>⭐ Top Rated Books</h2>
+          <p>Most loved books by our readers.</p>
+        </div>
 
-      <h2>⭐ Top Rated Books</h2>
+        <div className="book-list">
+          {topRatedBooks.map((book) => (
+            <BookCard
+              key={book._id}
+              id={book._id}
+              title={book.title}
+              author={book.author}
+              image={book.image}
+            />
+          ))}
+        </div>
 
-      <div className="book-list">
-        {topRatedBooks.map((book) => (
-          <BookCard
-            key={book._id}
-            id={book._id}
-            title={book.title}
-            author={book.author}
-            image={book.image}
-          />
-        ))}
-      </div>
+      </section>
+
+      <section className="stats">
+
+        <div className="stat-card">
+          <h1>{books.length}+</h1>
+          <p>Books</p>
+        </div>
+
+        <div className="stat-card">
+          <h1>100+</h1>
+          <p>Authors</p>
+        </div>
+
+        <div className="stat-card">
+          <h1>500+</h1>
+          <p>Readers</p>
+        </div>
+
+        <div className="stat-card">
+          <h1>4.9★</h1>
+          <p>Average Rating</p>
+        </div>
+
+      </section>
+
     </div>
   );
 }

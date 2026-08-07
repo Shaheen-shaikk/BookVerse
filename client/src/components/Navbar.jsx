@@ -1,4 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import "../styles/navbar.css";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -9,151 +10,95 @@ function Navbar() {
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
     navigate("/login");
   };
 
-  const linkStyle = (path) => ({
-    color: "white",
-    textDecoration: "none",
-    fontWeight:
-      location.pathname === path ? "bold" : "normal",
-    borderBottom:
-      location.pathname === path
-        ? "2px solid white"
-        : "none",
-    paddingBottom: "3px",
-  });
-
   return (
-    <nav
-      style={{
-        background: "#4f46e5",
-        color: "white",
-        padding: "15px 40px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        position: "sticky",
-        top: 0,
-        zIndex: 1000,
-        boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
-      }}
-    >
-      <Link
-        to="/"
-        style={{
-          textDecoration: "none",
-          color: "white",
-        }}
-      >
-        <h2>📚 BookVerse</h2>
+    <nav className="navbar">
+
+      <Link to="/" className="logo">
+        📚 BookVerse
       </Link>
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "20px",
-        }}
-      >
-        <Link to="/" style={linkStyle("/")}>
+      <div className="nav-links">
+
+        <Link
+          className={location.pathname === "/" ? "active" : ""}
+          to="/"
+        >
           Home
         </Link>
 
         <Link
+          className={location.pathname === "/books" ? "active" : ""}
           to="/books"
-          style={linkStyle("/books")}
         >
           Books
         </Link>
 
         <Link
+          className={location.pathname === "/explore" ? "active" : ""}
           to="/explore"
-          style={linkStyle("/explore")}
         >
           Explore
         </Link>
 
         <Link
+          className={
+            location.pathname === "/free-books"
+              ? "active"
+              : ""
+          }
           to="/free-books"
-          style={linkStyle("/free-books")}
         >
           Free Books
         </Link>
 
-        {!user && (
+      </div>
+
+      <div className="nav-right">
+
+        <input
+          placeholder="Search books..."
+          className="search-box"
+        />
+
+        {!user ? (
           <>
-            <Link
-              to="/login"
-              style={linkStyle("/login")}
-            >
-              Login
+            <Link to="/login">
+              <button>Login</button>
             </Link>
 
-            <Link
-              to="/register"
-              style={linkStyle("/register")}
-            >
-              Register
+            <Link to="/register">
+              <button>Register</button>
             </Link>
           </>
-        )}
-
-        {user && (
+        ) : (
           <>
-            <span
-              style={{
-                fontWeight: "bold",
-              }}
-            >
-              👋 Hi, {user.name}
+            <span className="username">
+              👋 {user.name}
             </span>
 
-            <Link
-              to="/profile"
-              style={linkStyle("/profile")}
-            >
+            {user.role === "admin" && (
+              <Link to="/admin">Admin</Link>
+            )}
+
+            {user.role === "author" && (
+              <Link to="/author">Author</Link>
+            )}
+
+            <Link to="/profile">
               Profile
             </Link>
 
-            {/* Admin */}
-            {user.role === "admin" && (
-              <Link
-                to="/admin"
-                style={linkStyle("/admin")}
-              >
-                Admin
-              </Link>
-            )}
-
-            {/* Author */}
-            {user.role === "author" && (
-              <Link
-                to="/author"
-                style={linkStyle("/author")}
-              >
-                Author Dashboard
-              </Link>
-            )}
-
-            <button
-              onClick={logout}
-              style={{
-                background: "#dc2626",
-                color: "white",
-                border: "none",
-                padding: "8px 16px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: "bold",
-              }}
-            >
+            <button onClick={logout}>
               Logout
             </button>
           </>
         )}
+
       </div>
+
     </nav>
   );
 }
