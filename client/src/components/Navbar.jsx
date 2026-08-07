@@ -9,13 +9,15 @@ function Navbar() {
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
     navigate("/login");
   };
 
   const linkStyle = (path) => ({
     color: "white",
     textDecoration: "none",
-    fontWeight: location.pathname === path ? "bold" : "normal",
+    fontWeight:
+      location.pathname === path ? "bold" : "normal",
     borderBottom:
       location.pathname === path
         ? "2px solid white"
@@ -59,19 +61,26 @@ function Navbar() {
           Home
         </Link>
 
-        <Link to="/books" style={linkStyle("/books")}>
+        <Link
+          to="/books"
+          style={linkStyle("/books")}
+        >
           Books
         </Link>
 
-        <Link to="/explore" style={linkStyle("/explore")}>
+        <Link
+          to="/explore"
+          style={linkStyle("/explore")}
+        >
           Explore
         </Link>
+
         <Link
-  to="/free-books"
-  style={linkStyle("/free-books")}
->
-  Free Books
-</Link>
+          to="/free-books"
+          style={linkStyle("/free-books")}
+        >
+          Free Books
+        </Link>
 
         {!user && (
           <>
@@ -108,12 +117,23 @@ function Navbar() {
               Profile
             </Link>
 
+            {/* Admin */}
             {user.role === "admin" && (
               <Link
                 to="/admin"
                 style={linkStyle("/admin")}
               >
                 Admin
+              </Link>
+            )}
+
+            {/* Author */}
+            {user.role === "author" && (
+              <Link
+                to="/author"
+                style={linkStyle("/author")}
+              >
+                Author Dashboard
               </Link>
             )}
 

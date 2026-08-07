@@ -44,7 +44,9 @@ router.get("/:id", async (req, res) => {
 // ===========================
 router.post("/", async (req, res) => {
   try {
-    const book = new Book(req.body);
+    const book = new Book({
+  ...req.body,
+});
 
     const savedBook = await book.save();
 
@@ -192,5 +194,20 @@ router.get("/favorites/:userId", async (req, res) => {
     });
   }
 });
+// ===========================
+// GET MY BOOKS (AUTHOR)
+// ===========================
+router.get("/author/:authorId", async (req, res) => {
+  try {
+    const books = await Book.find({
+      authorId: req.params.authorId,
+    }).sort({ createdAt: -1 });
 
+    res.json(books);
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
+  }
+});
 module.exports = router;

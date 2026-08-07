@@ -12,6 +12,13 @@ const bookSchema = new mongoose.Schema(
       required: true,
     },
 
+    // NEW ⭐
+    authorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
     category: {
       type: String,
       required: true,
@@ -22,16 +29,9 @@ const bookSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Book cover image URL from Cloudinary
     image: {
       type: String,
       required: true,
-    },
-
-    // Book PDF URL from Cloudinary
-    pdf: {
-      type: String,
-      default: "",
     },
 
     rating: {

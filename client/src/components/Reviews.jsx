@@ -10,14 +10,14 @@ function Reviews({ bookId }) {
 
   useEffect(() => {
     fetchReviews();
-  }, []);
+  }, [bookId]);
 
   const fetchReviews = async () => {
     try {
       const res = await API.get(`/reviews/${bookId}`);
       setReviews(res.data);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -35,27 +35,39 @@ function Reviews({ bookId }) {
     try {
       await API.post("/reviews", {
         book: bookId,
-        user: user._id,
+        user: user.id,
         userName: user.name,
         rating,
         comment,
       });
+
+      alert("✅ Review submitted successfully!");
 
       setComment("");
       setRating(5);
 
       fetchReviews();
     } catch (err) {
-      console.log(err);
+      console.error("Review Error:", err);
+
+      if (err.response) {
+        console.log(err.response.data);
+        alert(err.response.data.message);
+      } else {
+        alert(err.message);
+      }
     }
   };
 
   const deleteReview = async (reviewId) => {
     try {
       await API.delete(`/reviews/${reviewId}`);
+
+      alert("Review deleted!");
+
       fetchReviews();
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -77,9 +89,7 @@ function Reviews({ bookId }) {
     >
       <h2>⭐⭐⭐⭐⭐ Reviews</h2>
 
-      <h3>
-        Average Rating: ⭐ {average}
-      </h3>
+      <h3>Average Rating: ⭐ {average}</h3>
 
       <div
         style={{
@@ -112,6 +122,7 @@ function Reviews({ bookId }) {
           style={{
             width: "100%",
             padding: "10px",
+            borderRadius: "8px",
           }}
         />
 
@@ -126,6 +137,7 @@ function Reviews({ bookId }) {
             color: "white",
             border: "none",
             borderRadius: "8px",
+            cursor: "pointer",
           }}
         >
           Submit Review
@@ -149,12 +161,13 @@ function Reviews({ bookId }) {
           >
             <h3>{review.userName}</h3>
 
-            <p>⭐ {review.rating}</p>
+            <p>⭐ {review.rating}/5</p>
 
             <p>{review.comment}</p>
 
             {user &&
-              review.user === user._id && (
+              review.user &&
+              review.user.toString() === user.id && (
                 <button
                   onClick={() =>
                     deleteReview(review._id)
@@ -165,6 +178,7 @@ function Reviews({ bookId }) {
                     border: "none",
                     padding: "8px 15px",
                     borderRadius: "6px",
+                    cursor: "pointer",
                   }}
                 >
                   Delete

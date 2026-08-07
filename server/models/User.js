@@ -22,8 +22,23 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["user", "admin"],
-      default: "user",
+      enum: ["reader", "author", "admin"],
+      default: "reader",
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    verificationToken: {
+      type: String,
+      default: null,
+    },
+
+    verificationExpires: {
+      type: Date,
+      default: null,
     },
 
     favorites: [
