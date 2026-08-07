@@ -6,7 +6,6 @@ function Profile() {
 
   const [user, setUser] = useState(null);
   const [favorites, setFavorites] = useState([]);
-
   const [edit, setEdit] = useState(false);
 
   const [form, setForm] = useState({
@@ -58,7 +57,7 @@ function Profile() {
         prev.filter((book) => book._id !== bookId)
       );
 
-      alert("Removed from favorites");
+      alert("Removed from Favorites");
     } catch (err) {
       console.log(err);
     }
@@ -113,12 +112,11 @@ function Profile() {
           background: "#fff",
           padding: "30px",
           borderRadius: "12px",
-          boxShadow: "0 5px 20px rgba(0,0,0,.1)",
+          border: "1px solid #ddd",
+          marginTop: "30px",
         }}
       >
-        <p>
-          <strong>Name:</strong>
-        </p>
+        <p><strong>Name:</strong></p>
 
         {edit ? (
           <input
@@ -134,9 +132,9 @@ function Profile() {
           <p>{user.name}</p>
         )}
 
-        <p>
-          <strong>Email:</strong>
-        </p>
+        <br />
+
+        <p><strong>Email:</strong></p>
 
         {edit ? (
           <input
@@ -152,30 +150,13 @@ function Profile() {
           <p>{user.email}</p>
         )}
 
-        <p>
-          <strong>Role:</strong>
-        </p>
+        <br />
 
-        <p>{user.role}</p>
+        <p><strong>Role:</strong> {user.role}</p>
 
         <p>
-          <strong>Books Published:</strong>
-        </p>
-
-        <p>{user.booksCount || 0}</p>
-
-        <p>
-          <strong>Favourite Books:</strong>
-        </p>
-
-        <p>{favorites.length}</p>
-
-        <p>
-          <strong>Joined:</strong>
-        </p>
-
-        <p>
-          {new Date(user.createdAt).toLocaleDateString()}
+          <strong>Favourite Books:</strong>{" "}
+          {favorites.length}
         </p>
 
         <br />
@@ -185,9 +166,7 @@ function Profile() {
             Save Changes
           </button>
         ) : (
-          <button
-            onClick={() => setEdit(true)}
-          >
+          <button onClick={() => setEdit(true)}>
             Edit Profile
           </button>
         )}
