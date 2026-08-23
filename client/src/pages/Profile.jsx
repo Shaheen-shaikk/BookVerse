@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import API from "../services/api";
 
 function Profile() {
-  const localUser = JSON.parse(localStorage.getItem("user"));
+  const localUser = JSON.parse(
+    localStorage.getItem("user")
+  );
 
   const [user, setUser] = useState(null);
   const [favorites, setFavorites] = useState([]);
@@ -14,7 +16,7 @@ function Profile() {
   });
 
   useEffect(() => {
-    if (localUser) {
+    if (localUser?.id) {
       fetchProfile();
       fetchFavorites();
     }
@@ -22,7 +24,9 @@ function Profile() {
 
   const fetchProfile = async () => {
     try {
-      const res = await API.get(`/users/${localUser.id}`);
+      const res = await API.get(
+        `/users/${localUser.id}`
+      );
 
       setUser(res.data);
 
@@ -31,7 +35,7 @@ function Profile() {
         email: res.data.email,
       });
     } catch (err) {
-      console.log(err);
+      console.log("Profile Error:", err);
     }
   };
 
@@ -41,9 +45,9 @@ function Profile() {
         `/books/favorites/${localUser.id}`
       );
 
-      setFavorites(res.data);
+      setFavorites(res.data || []);
     } catch (err) {
-      console.log(err);
+      console.log("Favorites Error:", err);
     }
   };
 
@@ -54,12 +58,14 @@ function Profile() {
       );
 
       setFavorites((prev) =>
-        prev.filter((book) => book._id !== bookId)
+        prev.filter(
+          (book) => book._id !== bookId
+        )
       );
 
-      alert("Removed from Favorites");
+      alert("💔 Removed from Favorites");
     } catch (err) {
-      console.log(err);
+      console.log("Remove Favorite Error:", err);
     }
   };
 
@@ -76,23 +82,42 @@ function Profile() {
         "user",
         JSON.stringify({
           ...localUser,
+          id: res.data._id || localUser.id,
           name: res.data.name,
           email: res.data.email,
         })
       );
 
-      alert("Profile Updated");
+      alert("✅ Profile Updated");
 
       setEdit(false);
     } catch (err) {
-      console.log(err);
+      console.log("Update Profile Error:", err);
     }
   };
 
+  if (!localUser) {
+    return (
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "100px",
+        }}
+      >
+        <h2>Please login first.</h2>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
-      <div className="home">
-        <h2>Loading...</h2>
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "100px",
+        }}
+      >
+        <h2>Loading Profile...</h2>
       </div>
     );
   }
@@ -103,6 +128,7 @@ function Profile() {
       style={{
         maxWidth: "900px",
         margin: "40px auto",
+        padding: "20px",
       }}
     >
       <h1>👤 My Profile</h1>
@@ -116,7 +142,9 @@ function Profile() {
           marginTop: "30px",
         }}
       >
-        <p><strong>Name:</strong></p>
+        <p>
+          <strong>Name:</strong>
+        </p>
 
         {edit ? (
           <input
@@ -127,6 +155,11 @@ function Profile() {
                 name: e.target.value,
               })
             }
+            style={{
+              padding: "10px",
+              width: "100%",
+              maxWidth: "400px",
+            }}
           />
         ) : (
           <p>{user.name}</p>
@@ -134,7 +167,9 @@ function Profile() {
 
         <br />
 
-        <p><strong>Email:</strong></p>
+        <p>
+          <strong>Email:</strong>
+        </p>
 
         {edit ? (
           <input
@@ -145,6 +180,11 @@ function Profile() {
                 email: e.target.value,
               })
             }
+            style={{
+              padding: "10px",
+              width: "100%",
+              maxWidth: "400px",
+            }}
           />
         ) : (
           <p>{user.email}</p>
@@ -152,7 +192,10 @@ function Profile() {
 
         <br />
 
-        <p><strong>Role:</strong> {user.role}</p>
+        <p>
+          <strong>Role:</strong>{" "}
+          {user.role}
+        </p>
 
         <p>
           <strong>Favourite Books:</strong>{" "}
@@ -162,11 +205,31 @@ function Profile() {
         <br />
 
         {edit ? (
-          <button onClick={saveProfile}>
+          <button
+            onClick={saveProfile}
+            style={{
+              background: "#4f46e5",
+              color: "white",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
             Save Changes
           </button>
         ) : (
-          <button onClick={() => setEdit(true)}>
+          <button
+            onClick={() => setEdit(true)}
+            style={{
+              background: "#4f46e5",
+              color: "white",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
             Edit Profile
           </button>
         )}
@@ -197,8 +260,16 @@ function Profile() {
               onClick={() =>
                 removeFavorite(book._id)
               }
+              style={{
+                background: "#dc2626",
+                color: "white",
+                border: "none",
+                padding: "8px 15px",
+                borderRadius: "6px",
+                cursor: "pointer",
+              }}
             >
-              Remove
+              💔 Remove
             </button>
           </div>
         ))

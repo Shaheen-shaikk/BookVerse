@@ -127,7 +127,7 @@ router.get(
           <h1>✅ Email Verified Successfully</h1>
 
           <p>
-            Your BookVerse account has been activated.
+            Your Readora account has been activated.
           </p>
 
           <a

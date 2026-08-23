@@ -24,7 +24,7 @@ mongoose
 
 // Home Route
 app.get("/", (req, res) => {
-  res.send("🚀 BookVerse Backend Running");
+  res.send("🚀 Readora Backend Running");
 });
 
 // API Routes

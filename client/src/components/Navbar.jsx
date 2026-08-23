@@ -17,7 +17,7 @@ function Navbar() {
     <nav className="navbar">
 
       <Link to="/" className="logo">
-        📚 BookVerse
+        📚 Readora
       </Link>
 
       <div className="nav-links">

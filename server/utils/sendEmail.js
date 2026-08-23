@@ -9,17 +9,17 @@ const sendVerificationEmail = async (
 ) => {
   try {
     const response = await resend.emails.send({
-      from: "BookVerse <onboarding@resend.dev>",
+      from: "Readora <onboarding@resend.dev>",
       to: userEmail,
-      subject: "Verify Your BookVerse Account 📚",
+      subject: "Verify Your Readora Account 📚",
       html: `
         <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; padding:20px;">
-          <h1 style="color:#4f46e5;">📚 Welcome to BookVerse</h1>
+          <h1 style="color:#4f46e5;">📚 Welcome to Readora</h1>
 
           <p>Hi <strong>${userName}</strong>,</p>
 
           <p>
-            Thank you for joining <b>BookVerse</b>.
+            Thank you for joining <b>Readora</b>.
           </p>
 
           <p>

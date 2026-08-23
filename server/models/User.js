@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
+    // ================================
+    // USER DETAILS
+    // ================================
     name: {
       type: String,
       required: true,
@@ -20,12 +23,22 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
+    // ================================
+    // ROLE
+    // ================================
     role: {
       type: String,
-      enum: ["reader", "author", "admin"],
+      enum: [
+        "reader",
+        "author",
+        "admin",
+      ],
       default: "reader",
     },
 
+    // ================================
+    // EMAIL VERIFICATION
+    // ================================
     isVerified: {
       type: Boolean,
       default: false,
@@ -41,6 +54,9 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
+    // ================================
+    // FAVORITE BOOKS
+    // ================================
     favorites: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -48,6 +64,19 @@ const userSchema = new mongoose.Schema(
       },
     ],
 
+    // ================================
+    // BOOKMARKED BOOKS
+    // ================================
+    bookmarks: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Book",
+      },
+    ],
+
+    // ================================
+    // READING LIST
+    // ================================
     readingList: [
       {
         book: {
@@ -57,7 +86,11 @@ const userSchema = new mongoose.Schema(
 
         status: {
           type: String,
-          enum: ["Want to Read", "Reading", "Finished"],
+          enum: [
+            "Want to Read",
+            "Reading",
+            "Finished",
+          ],
           default: "Want to Read",
         },
       },
@@ -68,4 +101,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model(
+  "User",
+  userSchema
+);

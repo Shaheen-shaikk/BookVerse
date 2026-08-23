@@ -81,7 +81,7 @@ function Register() {
             marginBottom: "25px",
           }}
         >
-          📚 Join BookVerse
+          📚 Join Readora
         </h1>
 
         <form

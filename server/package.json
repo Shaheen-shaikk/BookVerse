@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "BookVerse Backend",
+  "description": "Readora Backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

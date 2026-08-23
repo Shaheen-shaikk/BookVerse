@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import API from "../services/api";
-import Reviews from "../components/Reviews"; 
+import Reviews from "../components/Reviews";
 
 function BookDetails() {
   const { id } = useParams();
@@ -10,29 +10,39 @@ function BookDetails() {
 
   const [book, setBook] = useState(null);
   const [favorite, setFavorite] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
   const [status, setStatus] = useState("Want to Read");
 
   useEffect(() => {
     fetchBook();
 
-    if (user) {
+    if (user?.id) {
       checkFavorite();
+      checkBookmark();
       fetchReadingStatus();
     }
-  }, []);
+  }, [id]);
 
+  // =========================
+  // FETCH BOOK
+  // =========================
   const fetchBook = async () => {
     try {
       const res = await API.get(`/books/${id}`);
       setBook(res.data);
     } catch (err) {
-      console.log(err);
+      console.log("Fetch Book Error:", err);
     }
   };
 
+  // =========================
+  // CHECK FAVORITE
+  // =========================
   const checkFavorite = async () => {
     try {
-      const res = await API.get(`/books/favorites/${user._id}`);
+      const res = await API.get(
+        `/books/favorites/${user.id}`
+      );
 
       const exists = res.data.some(
         (book) => book._id === id
@@ -40,72 +50,229 @@ function BookDetails() {
 
       setFavorite(exists);
     } catch (err) {
-      console.log(err);
+      console.log(
+        "Check Favorite Error:",
+        err
+      );
     }
   };
 
+  // =========================
+  // CHECK BOOKMARK
+  // =========================
+  const checkBookmark = async () => {
+    try {
+      const res = await API.get(
+        `/users/bookmarks/${user.id}`
+      );
+
+      const exists = res.data.some(
+        (book) => book._id === id
+      );
+
+      setBookmarked(exists);
+    } catch (err) {
+      console.log(
+        "Check Bookmark Error:",
+        err
+      );
+    }
+  };
+
+  // =========================
+  // FETCH READING STATUS
+  // =========================
   const fetchReadingStatus = async () => {
     try {
-      const res = await API.get(`/users/reading/${user._id}`);
+      const res = await API.get(
+        `/users/reading/${user.id}`
+      );
 
       const current = res.data.find(
-        (item) => item.book._id === id
+        (item) =>
+          item.book &&
+          item.book._id === id
       );
 
       if (current) {
         setStatus(current.status);
       }
     } catch (err) {
-      console.log(err);
+      console.log(
+        "Reading Status Error:",
+        err
+      );
     }
   };
 
+  // =========================
+  // UPDATE READING STATUS
+  // =========================
   const updateReadingStatus = async (value) => {
-    try {
-      setStatus(value);
-
-      await API.put(`/users/reading/${id}`, {
-        userId: user._id,
-        status: value,
-      });
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const addFavorite = async () => {
-    if (!user) {
+    if (!user?.id) {
       alert("Please Login First");
       return;
     }
 
     try {
-      await API.put(`/books/favorite/${book._id}`, {
-        userId: user._id,
-      });
+      setStatus(value);
+
+      await API.put(
+        `/users/reading/${id}`,
+        {
+          userId: user.id,
+          status: value,
+        }
+      );
+
+      alert("📖 Reading status updated");
+    } catch (err) {
+      console.log(
+        "Update Reading Status Error:",
+        err
+      );
+    }
+  };
+
+  // =========================
+  // ADD FAVORITE
+  // =========================
+  const addFavorite = async () => {
+    if (!user?.id) {
+      alert("Please Login First");
+      return;
+    }
+
+    if (!book?._id) {
+      alert("Book information not available");
+      return;
+    }
+
+    try {
+      await API.put(
+        `/books/favorite/${book._id}`,
+        {
+          userId: user.id,
+        }
+      );
 
       setFavorite(true);
 
       alert("❤️ Added to Favorites");
     } catch (err) {
-      console.log(err);
+      console.log(
+        "Add Favorite Error:",
+        err
+      );
+
+      alert(
+        err.response?.data?.message ||
+          "Failed to add favorite"
+      );
     }
   };
 
+  // =========================
+  // REMOVE FAVORITE
+  // =========================
   const removeFavorite = async () => {
+    if (!user?.id) {
+      alert("Please Login First");
+      return;
+    }
+
     try {
       await API.delete(
-        `/books/favorite/${book._id}/${user._id}`
+        `/books/favorite/${book._id}/${user.id}`
       );
 
       setFavorite(false);
 
       alert("💔 Removed from Favorites");
     } catch (err) {
-      console.log(err);
+      console.log(
+        "Remove Favorite Error:",
+        err
+      );
+
+      alert(
+        err.response?.data?.message ||
+          "Failed to remove favorite"
+      );
     }
   };
 
+  // =========================
+  // ADD BOOKMARK
+  // =========================
+  const addBookmark = async () => {
+    if (!user?.id) {
+      alert("Please Login First");
+      return;
+    }
+
+    if (!book?._id) {
+      alert("Book information not available");
+      return;
+    }
+
+    try {
+      await API.put(
+        `/users/bookmark/${book._id}`,
+        {
+          userId: user.id,
+        }
+      );
+
+      setBookmarked(true);
+
+      alert("🔖 Bookmarked successfully");
+    } catch (err) {
+      console.log(
+        "Add Bookmark Error:",
+        err
+      );
+
+      alert(
+        err.response?.data?.message ||
+          "Failed to bookmark book"
+      );
+    }
+  };
+
+  // =========================
+  // REMOVE BOOKMARK
+  // =========================
+  const removeBookmark = async () => {
+    if (!user?.id) {
+      alert("Please Login First");
+      return;
+    }
+
+    try {
+      await API.delete(
+        `/users/bookmark/${book._id}/${user.id}`
+      );
+
+      setBookmarked(false);
+
+      alert("🔖 Bookmark removed");
+    } catch (err) {
+      console.log(
+        "Remove Bookmark Error:",
+        err
+      );
+
+      alert(
+        err.response?.data?.message ||
+          "Failed to remove bookmark"
+      );
+    }
+  };
+
+  // =========================
+  // LOADING
+  // =========================
   if (!book) {
     return (
       <div className="home">
@@ -114,6 +281,9 @@ function BookDetails() {
     );
   }
 
+  // =========================
+  // UI
+  // =========================
   return (
     <div
       className="home"
@@ -130,6 +300,7 @@ function BookDetails() {
           flexWrap: "wrap",
         }}
       >
+        {/* BOOK IMAGE */}
         <img
           src={
             book.image ||
@@ -144,6 +315,7 @@ function BookDetails() {
           }}
         />
 
+        {/* BOOK INFORMATION */}
         <div
           style={{
             flex: 1,
@@ -177,6 +349,7 @@ function BookDetails() {
 
           <br />
 
+          {/* DESCRIPTION */}
           <h3>Description</h3>
 
           <p
@@ -189,6 +362,7 @@ function BookDetails() {
 
           <br />
 
+          {/* READING STATUS */}
           <h3>📖 Reading Status</h3>
 
           <select
@@ -204,58 +378,100 @@ function BookDetails() {
               width: "220px",
             }}
           >
-            <option>
-              Want to Read
-            </option>
-
-            <option>
-              Reading
-            </option>
-
-            <option>
-              Finished
-            </option>
+            <option>Want to Read</option>
+            <option>Reading</option>
+            <option>Finished</option>
           </select>
 
           <br />
           <br />
 
-          {favorite ? (
-            <button
-              onClick={removeFavorite}
-              style={{
-                background: "#dc2626",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-              }}
-            >
-              💔 Remove Favorite
-            </button>
-          ) : (
-            <button
-              onClick={addFavorite}
-              style={{
-                background: "#2563eb",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-              }}
-            >
-              ❤️ Add Favorite
-            </button>
-          )}
+          {/* FAVORITE + BOOKMARK */}
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+              flexWrap: "wrap",
+            }}
+          >
+            {/* FAVORITE BUTTON */}
+            {favorite ? (
+              <button
+                type="button"
+                onClick={removeFavorite}
+                style={{
+                  background: "#dc2626",
+                  color: "white",
+                  border: "none",
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                }}
+              >
+                💔 Remove Favorite
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={addFavorite}
+                style={{
+                  background: "#2563eb",
+                  color: "white",
+                  border: "none",
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                }}
+              >
+                ❤️ Add Favorite
+              </button>
+            )}
+
+            {/* BOOKMARK BUTTON */}
+            {bookmarked ? (
+              <button
+                type="button"
+                onClick={removeBookmark}
+                style={{
+                  background: "#16a34a",
+                  color: "white",
+                  border: "none",
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                }}
+              >
+                🔖 Bookmarked
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={addBookmark}
+                style={{
+                  background: "#7c3aed",
+                  color: "white",
+                  border: "none",
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                }}
+              >
+                🔖 Bookmark
+              </button>
+            )}
+          </div>
         </div>
       </div>
-      <hr style={{ margin: "50px 0" }} />
 
-<Reviews bookId={book._id} />
+      <hr
+        style={{
+          margin: "50px 0",
+        }}
+      />
+
+      {/* REVIEWS */}
+      <Reviews bookId={book._id} />
     </div>
-    
   );
 }
 
