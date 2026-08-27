@@ -1,25 +1,42 @@
 import { useState } from "react";
+import BackNextButtons from "../components/BackNextButtons";
 
 function FreeBooks() {
   const [books, setBooks] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // =====================================================
+  // SEARCH FREE BOOKS
+  // =====================================================
+
   const searchBooks = async () => {
     try {
       setLoading(true);
 
       const url = search.trim()
-        ? `https://gutendex.com/books?search=${encodeURIComponent(search)}`
+        ? `https://gutendex.com/books?search=${encodeURIComponent(
+            search
+          )}`
         : "https://gutendex.com/books";
 
       const res = await fetch(url);
+
+      if (!res.ok) {
+        throw new Error(
+          "Failed to fetch books"
+        );
+      }
 
       const data = await res.json();
 
       setBooks(data.results || []);
     } catch (err) {
-      console.log(err);
+      console.log(
+        "Gutendex Error:",
+        err
+      );
+
       alert("Failed to fetch books");
     } finally {
       setLoading(false);
@@ -28,11 +45,32 @@ function FreeBooks() {
 
   return (
     <div className="home">
-      <h1>📜 Free Books</h1>
+
+      {/* =================================================
+          BACK / NEXT
+      ================================================= */}
+
+      <BackNextButtons
+        nextPath="/bookmarks"
+        nextLabel="Bookmarks →"
+      />
+
+      {/* =================================================
+          HEADER
+      ================================================= */}
+
+      <h1>
+        📜 Free Books
+      </h1>
 
       <p>
-        Read thousands of free public-domain books.
+        Read thousands of free
+        public-domain books.
       </p>
+
+      {/* =================================================
+          SEARCH
+      ================================================= */}
 
       <div
         style={{
@@ -42,6 +80,7 @@ function FreeBooks() {
           margin: "25px 0",
         }}
       >
+
         <input
           type="text"
           placeholder="Search free books..."
@@ -50,8 +89,9 @@ function FreeBooks() {
             setSearch(e.target.value)
           }
           onKeyDown={(e) => {
-            if (e.key === "Enter")
+            if (e.key === "Enter") {
               searchBooks();
+            }
           }}
           style={{
             width: "350px",
@@ -60,12 +100,28 @@ function FreeBooks() {
           }}
         />
 
-        <button onClick={searchBooks}>
+        <button
+          type="button"
+          onClick={searchBooks}
+        >
           🔍 Search
         </button>
+
       </div>
 
-      {loading && <h2>Loading...</h2>}
+      {/* =================================================
+          LOADING
+      ================================================= */}
+
+      {loading && (
+        <h2>
+          Loading...
+        </h2>
+      )}
+
+      {/* =================================================
+          BOOK GRID
+      ================================================= */}
 
       <div
         style={{
@@ -75,17 +131,25 @@ function FreeBooks() {
           gap: "20px",
         }}
       >
+
         {books.map((book) => (
+
           <div
             key={book.id}
             style={{
-              border: "1px solid #ddd",
+              border:
+                "1px solid #ddd",
               borderRadius: "10px",
               padding: "20px",
               boxShadow:
                 "0 2px 10px rgba(0,0,0,.1)",
             }}
           >
+
+            {/* =========================
+                COVER
+            ========================== */}
+
             <img
               src={
                 book.formats[
@@ -101,7 +165,17 @@ function FreeBooks() {
               }}
             />
 
-            <h3>{book.title}</h3>
+            {/* =========================
+                TITLE
+            ========================== */}
+
+            <h3>
+              {book.title}
+            </h3>
+
+            {/* =========================
+                AUTHOR
+            ========================== */}
 
             <p>
               👤{" "}
@@ -110,14 +184,22 @@ function FreeBooks() {
                 : "Unknown"}
             </p>
 
+            {/* =========================
+                BOOK ACTIONS
+            ========================== */}
+
             <div
               style={{
                 display: "flex",
-                flexDirection: "column",
+                flexDirection:
+                  "column",
                 gap: "10px",
                 marginTop: "15px",
               }}
             >
+
+              {/* READ ONLINE */}
+
               {book.formats[
                 "text/html"
               ] && (
@@ -130,11 +212,15 @@ function FreeBooks() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <button>
+                  <button
+                    type="button"
+                  >
                     📖 Read Online
                   </button>
                 </a>
               )}
+
+              {/* DOWNLOAD EPUB */}
 
               {book.formats[
                 "application/epub+zip"
@@ -148,11 +234,15 @@ function FreeBooks() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <button>
+                  <button
+                    type="button"
+                  >
                     ⬇ Download EPUB
                   </button>
                 </a>
               )}
+
+              {/* DOWNLOAD PDF */}
 
               {book.formats[
                 "application/pdf"
@@ -166,15 +256,33 @@ function FreeBooks() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <button>
+                  <button
+                    type="button"
+                  >
                     ⬇ Download PDF
                   </button>
                 </a>
               )}
+
             </div>
+
           </div>
+
         ))}
+
       </div>
+
+      {/* =================================================
+          BOTTOM BACK / NEXT
+      ================================================= */}
+
+      {books.length > 0 && (
+        <BackNextButtons
+          nextPath="/bookmarks"
+          nextLabel="Bookmarks →"
+        />
+      )}
+
     </div>
   );
 }

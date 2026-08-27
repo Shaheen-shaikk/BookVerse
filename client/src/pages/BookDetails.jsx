@@ -1,18 +1,25 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import API from "../services/api";
 import Reviews from "../components/Reviews";
 
 function BookDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(
+    localStorage.getItem("user")
+  );
 
   const [book, setBook] = useState(null);
   const [favorite, setFavorite] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
-  const [status, setStatus] = useState("Want to Read");
+  const [status, setStatus] =
+    useState("Want to Read");
 
+  // =====================================================
+  // FETCH BOOK
+  // =====================================================
   useEffect(() => {
     fetchBook();
 
@@ -23,21 +30,24 @@ function BookDetails() {
     }
   }, [id]);
 
-  // =========================
-  // FETCH BOOK
-  // =========================
   const fetchBook = async () => {
     try {
-      const res = await API.get(`/books/${id}`);
+      const res = await API.get(
+        `/books/${id}`
+      );
+
       setBook(res.data);
     } catch (err) {
-      console.log("Fetch Book Error:", err);
+      console.log(
+        "Fetch Book Error:",
+        err
+      );
     }
   };
 
-  // =========================
+  // =====================================================
   // CHECK FAVORITE
-  // =========================
+  // =====================================================
   const checkFavorite = async () => {
     try {
       const res = await API.get(
@@ -57,9 +67,9 @@ function BookDetails() {
     }
   };
 
-  // =========================
+  // =====================================================
   // CHECK BOOKMARK
-  // =========================
+  // =====================================================
   const checkBookmark = async () => {
     try {
       const res = await API.get(
@@ -79,9 +89,9 @@ function BookDetails() {
     }
   };
 
-  // =========================
+  // =====================================================
   // FETCH READING STATUS
-  // =========================
+  // =====================================================
   const fetchReadingStatus = async () => {
     try {
       const res = await API.get(
@@ -105,10 +115,12 @@ function BookDetails() {
     }
   };
 
-  // =========================
+  // =====================================================
   // UPDATE READING STATUS
-  // =========================
-  const updateReadingStatus = async (value) => {
+  // =====================================================
+  const updateReadingStatus = async (
+    value
+  ) => {
     if (!user?.id) {
       alert("Please Login First");
       return;
@@ -125,7 +137,9 @@ function BookDetails() {
         }
       );
 
-      alert("📖 Reading status updated");
+      alert(
+        "📖 Reading status updated"
+      );
     } catch (err) {
       console.log(
         "Update Reading Status Error:",
@@ -134,9 +148,9 @@ function BookDetails() {
     }
   };
 
-  // =========================
+  // =====================================================
   // ADD FAVORITE
-  // =========================
+  // =====================================================
   const addFavorite = async () => {
     if (!user?.id) {
       alert("Please Login First");
@@ -144,7 +158,9 @@ function BookDetails() {
     }
 
     if (!book?._id) {
-      alert("Book information not available");
+      alert(
+        "Book information not available"
+      );
       return;
     }
 
@@ -158,7 +174,9 @@ function BookDetails() {
 
       setFavorite(true);
 
-      alert("❤️ Added to Favorites");
+      alert(
+        "❤️ Added to Favorites"
+      );
     } catch (err) {
       console.log(
         "Add Favorite Error:",
@@ -172,9 +190,9 @@ function BookDetails() {
     }
   };
 
-  // =========================
+  // =====================================================
   // REMOVE FAVORITE
-  // =========================
+  // =====================================================
   const removeFavorite = async () => {
     if (!user?.id) {
       alert("Please Login First");
@@ -188,7 +206,9 @@ function BookDetails() {
 
       setFavorite(false);
 
-      alert("💔 Removed from Favorites");
+      alert(
+        "💔 Removed from Favorites"
+      );
     } catch (err) {
       console.log(
         "Remove Favorite Error:",
@@ -202,9 +222,9 @@ function BookDetails() {
     }
   };
 
-  // =========================
+  // =====================================================
   // ADD BOOKMARK
-  // =========================
+  // =====================================================
   const addBookmark = async () => {
     if (!user?.id) {
       alert("Please Login First");
@@ -212,7 +232,9 @@ function BookDetails() {
     }
 
     if (!book?._id) {
-      alert("Book information not available");
+      alert(
+        "Book information not available"
+      );
       return;
     }
 
@@ -226,7 +248,9 @@ function BookDetails() {
 
       setBookmarked(true);
 
-      alert("🔖 Bookmarked successfully");
+      alert(
+        "🔖 Bookmarked successfully"
+      );
     } catch (err) {
       console.log(
         "Add Bookmark Error:",
@@ -240,9 +264,9 @@ function BookDetails() {
     }
   };
 
-  // =========================
+  // =====================================================
   // REMOVE BOOKMARK
-  // =========================
+  // =====================================================
   const removeBookmark = async () => {
     if (!user?.id) {
       alert("Please Login First");
@@ -256,7 +280,9 @@ function BookDetails() {
 
       setBookmarked(false);
 
-      alert("🔖 Bookmark removed");
+      alert(
+        "🔖 Bookmark removed"
+      );
     } catch (err) {
       console.log(
         "Remove Bookmark Error:",
@@ -270,9 +296,25 @@ function BookDetails() {
     }
   };
 
-  // =========================
+  // =====================================================
+  // OPEN READORA READER
+  // =====================================================
+  const openReader = () => {
+    if (!book?.readUrl) {
+      alert(
+        "📚 No online reading copy is available for this book."
+      );
+      return;
+    }
+
+    navigate(
+      `/reader/${book._id}`
+    );
+  };
+
+  // =====================================================
   // LOADING
-  // =========================
+  // =====================================================
   if (!book) {
     return (
       <div className="home">
@@ -281,9 +323,9 @@ function BookDetails() {
     );
   }
 
-  // =========================
+  // =====================================================
   // UI
-  // =========================
+  // =====================================================
   return (
     <div
       className="home"
@@ -292,6 +334,7 @@ function BookDetails() {
         margin: "40px auto",
       }}
     >
+
       <div
         style={{
           display: "flex",
@@ -300,7 +343,11 @@ function BookDetails() {
           flexWrap: "wrap",
         }}
       >
-        {/* BOOK IMAGE */}
+
+        {/* =========================
+            BOOK IMAGE
+        ========================== */}
+
         <img
           src={
             book.image ||
@@ -315,17 +362,23 @@ function BookDetails() {
           }}
         />
 
-        {/* BOOK INFORMATION */}
+        {/* =========================
+            BOOK INFORMATION
+        ========================== */}
+
         <div
           style={{
             flex: 1,
           }}
         >
+
           <h1>{book.title}</h1>
 
           <h2>{book.author}</h2>
 
-          <p>⭐ {book.rating}</p>
+          <p>
+            ⭐ {book.rating}
+          </p>
 
           <p>
             <strong>Category:</strong>{" "}
@@ -349,7 +402,10 @@ function BookDetails() {
 
           <br />
 
-          {/* DESCRIPTION */}
+          {/* =========================
+              DESCRIPTION
+          ========================== */}
+
           <h3>Description</h3>
 
           <p
@@ -362,8 +418,36 @@ function BookDetails() {
 
           <br />
 
-          {/* READING STATUS */}
-          <h3>📖 Reading Status</h3>
+          {/* =========================
+              READ BOOK
+          ========================== */}
+
+          {book.readUrl && (
+            <button
+              type="button"
+              onClick={openReader}
+              style={{
+                background: "#2563eb",
+                color: "white",
+                border: "none",
+                padding: "12px 24px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontSize: "16px",
+                marginBottom: "20px",
+              }}
+            >
+              📖 Read Book
+            </button>
+          )}
+
+          {/* =========================
+              READING STATUS
+          ========================== */}
+
+          <h3>
+            📖 Reading Status
+          </h3>
 
           <select
             value={status}
@@ -378,15 +462,26 @@ function BookDetails() {
               width: "220px",
             }}
           >
-            <option>Want to Read</option>
-            <option>Reading</option>
-            <option>Finished</option>
+            <option>
+              Want to Read
+            </option>
+
+            <option>
+              Reading
+            </option>
+
+            <option>
+              Finished
+            </option>
           </select>
 
           <br />
           <br />
 
-          {/* FAVORITE + BOOKMARK */}
+          {/* =========================
+              FAVORITE + BOOKMARK
+          ========================== */}
+
           <div
             style={{
               display: "flex",
@@ -394,11 +489,15 @@ function BookDetails() {
               flexWrap: "wrap",
             }}
           >
-            {/* FAVORITE BUTTON */}
+
+            {/* FAVORITE */}
+
             {favorite ? (
               <button
                 type="button"
-                onClick={removeFavorite}
+                onClick={
+                  removeFavorite
+                }
                 style={{
                   background: "#dc2626",
                   color: "white",
@@ -413,7 +512,9 @@ function BookDetails() {
             ) : (
               <button
                 type="button"
-                onClick={addFavorite}
+                onClick={
+                  addFavorite
+                }
                 style={{
                   background: "#2563eb",
                   color: "white",
@@ -427,11 +528,14 @@ function BookDetails() {
               </button>
             )}
 
-            {/* BOOKMARK BUTTON */}
+            {/* BOOKMARK */}
+
             {bookmarked ? (
               <button
                 type="button"
-                onClick={removeBookmark}
+                onClick={
+                  removeBookmark
+                }
                 style={{
                   background: "#16a34a",
                   color: "white",
@@ -446,7 +550,9 @@ function BookDetails() {
             ) : (
               <button
                 type="button"
-                onClick={addBookmark}
+                onClick={
+                  addBookmark
+                }
                 style={{
                   background: "#7c3aed",
                   color: "white",
@@ -459,8 +565,11 @@ function BookDetails() {
                 🔖 Bookmark
               </button>
             )}
+
           </div>
+
         </div>
+
       </div>
 
       <hr
@@ -469,8 +578,14 @@ function BookDetails() {
         }}
       />
 
-      {/* REVIEWS */}
-      <Reviews bookId={book._id} />
+      {/* =========================
+          REVIEWS
+      ========================== */}
+
+      <Reviews
+        bookId={book._id}
+      />
+
     </div>
   );
 }

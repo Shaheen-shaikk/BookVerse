@@ -95,6 +95,23 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+
+    // ================================
+    // READING HISTORY
+    // ================================
+    readingHistory: [
+      {
+        book: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Book",
+        },
+
+        lastReadAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

@@ -1,10 +1,15 @@
 import { useState } from "react";
+import BackNextButtons from "../components/BackNextButtons";
 
 function ExploreBooks() {
   const [search, setSearch] = useState("");
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+
+  // =========================
+  // SEARCH BOOKS
+  // =========================
 
   const searchBooks = async () => {
     if (!search.trim()) {
@@ -25,15 +30,23 @@ function ExploreBooks() {
       const res = await fetch(url);
 
       if (!res.ok) {
-        throw new Error("Failed to fetch books");
+        throw new Error(
+          "Failed to fetch books"
+        );
       }
 
       const data = await res.json();
 
       setBooks(data.docs || []);
     } catch (err) {
-      console.log("Open Library Error:", err);
-      alert("Failed to fetch books. Please try again.");
+      console.log(
+        "Open Library Error:",
+        err
+      );
+
+      alert(
+        "Failed to fetch books. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -42,6 +55,7 @@ function ExploreBooks() {
   // =========================
   // GET COVER
   // =========================
+
   const getCover = (book) => {
     if (book.cover_i) {
       return `https://covers.openlibrary.org/b/id/${book.cover_i}-L.jpg`;
@@ -53,6 +67,7 @@ function ExploreBooks() {
   // =========================
   // GET AUTHOR
   // =========================
+
   const getAuthor = (book) => {
     if (
       book.author_name &&
@@ -67,13 +82,15 @@ function ExploreBooks() {
   // =========================
   // CHECK BOOK AVAILABILITY
   // =========================
+
   const getAvailability = (book) => {
     if (!book.availability) {
       return "none";
     }
 
     if (
-      book.availability.status === "open"
+      book.availability.status ===
+      "open"
     ) {
       return "open";
     }
@@ -98,6 +115,7 @@ function ExploreBooks() {
   // =========================
   // OPEN LIBRARY URL
   // =========================
+
   const getOpenLibraryUrl = (book) => {
     if (!book.key) {
       return "https://openlibrary.org";
@@ -109,6 +127,7 @@ function ExploreBooks() {
   // =========================
   // READ URL
   // =========================
+
   const getReadUrl = (book) => {
     /*
       Open Library's search availability
@@ -121,7 +140,8 @@ function ExploreBooks() {
 
     if (
       book.availability &&
-      book.availability.status === "open" &&
+      book.availability.status ===
+        "open" &&
       book.availability.identifier
     ) {
       return `https://archive.org/details/${book.availability.identifier}`;
@@ -129,6 +149,10 @@ function ExploreBooks() {
 
     return null;
   };
+
+  // =========================
+  // UI
+  // =========================
 
   return (
     <div
@@ -139,11 +163,23 @@ function ExploreBooks() {
         padding: "0 20px",
       }}
     >
+
+      {/* =========================
+          BACK / NEXT
+      ========================== */}
+
+      <BackNextButtons
+        nextPath="/free-books"
+        nextLabel="Free Books →"
+      />
+
       {/* =========================
           HEADER
-      ========================= */}
+      ========================== */}
 
-      <h1>🌍 Explore Books</h1>
+      <h1>
+        🌐 Explore Books
+      </h1>
 
       <p>
         Discover millions of books through
@@ -152,7 +188,7 @@ function ExploreBooks() {
 
       {/* =========================
           SEARCH
-      ========================= */}
+      ========================== */}
 
       <div
         style={{
@@ -163,6 +199,7 @@ function ExploreBooks() {
           flexWrap: "wrap",
         }}
       >
+
         <input
           type="text"
           placeholder="Search books..."
@@ -199,11 +236,12 @@ function ExploreBooks() {
         >
           🔍 Search
         </button>
+
       </div>
 
       {/* =========================
           LOADING
-      ========================= */}
+      ========================== */}
 
       {loading && (
         <div
@@ -212,13 +250,15 @@ function ExploreBooks() {
             margin: "40px",
           }}
         >
-          <h2>📚 Finding books...</h2>
+          <h2>
+            📚 Finding books...
+          </h2>
         </div>
       )}
 
       {/* =========================
           NO RESULTS
-      ========================= */}
+      ========================== */}
 
       {!loading &&
         searched &&
@@ -241,182 +281,167 @@ function ExploreBooks() {
 
       {/* =========================
           BOOK GRID
-      ========================= */}
+      ========================== */}
 
-      {!loading && books.length > 0 && (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: "25px",
-            marginTop: "30px",
-          }}
-        >
-          {books.map((book, index) => {
-            const availability =
-              getAvailability(book);
+      {!loading &&
+        books.length > 0 && (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: "25px",
+              marginTop: "30px",
+            }}
+          >
 
-            const readUrl =
-              getReadUrl(book);
+            {books.map(
+              (book, index) => {
+                const availability =
+                  getAvailability(book);
 
-            return (
-              <div
-                key={`${book.key}-${index}`}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "12px",
-                  padding: "18px",
-                  textAlign: "center",
-                  background: "white",
-                  boxShadow:
-                    "0 3px 12px rgba(0,0,0,.08)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                {/* COVER */}
+                const readUrl =
+                  getReadUrl(book);
 
-                <img
-                  src={getCover(book)}
-                  alt={book.title}
-                  style={{
-                    width: "160px",
-                    height: "230px",
-                    objectFit: "cover",
-                    borderRadius: "8px",
-                  }}
-                />
-
-                {/* TITLE */}
-
-                <h3
-                  style={{
-                    marginTop: "15px",
-                    minHeight: "50px",
-                  }}
-                >
-                  {book.title}
-                </h3>
-
-                {/* AUTHOR */}
-
-                <p>
-                  👤 {getAuthor(book)}
-                </p>
-
-                {/* YEAR */}
-
-                <p>
-                  📅{" "}
-                  {book.first_publish_year ||
-                    "N/A"}
-                </p>
-
-                {/* EDITIONS */}
-
-                <p>
-                  ⭐ Edition Count:{" "}
-                  {book.edition_count ||
-                    0}
-                </p>
-
-                {/* =====================
-                    AVAILABILITY
-                ===================== */}
-
-                {availability === "open" && (
-                  <p
+                return (
+                  <div
+                    key={`${book.key}-${index}`}
                     style={{
-                      color: "#16a34a",
-                      fontWeight: "bold",
+                      border:
+                        "1px solid #ddd",
+                      borderRadius: "12px",
+                      padding: "18px",
+                      textAlign: "center",
+                      background: "white",
+                      boxShadow:
+                        "0 3px 12px rgba(0,0,0,.08)",
+                      display: "flex",
+                      flexDirection:
+                        "column",
+                      alignItems:
+                        "center",
                     }}
                   >
-                    🟢 Free to Read
-                  </p>
-                )}
 
-                {availability === "borrow" && (
-                  <p
-                    style={{
-                      color: "#2563eb",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    🔵 Available to Borrow
-                  </p>
-                )}
+                    {/* =========================
+                        COVER
+                    ========================== */}
 
-                {availability ===
-                  "unavailable" && (
-                  <p
-                    style={{
-                      color: "#ca8a04",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    🟡 Currently Unavailable
-                  </p>
-                )}
+                    <img
+                      src={getCover(book)}
+                      alt={book.title}
+                      style={{
+                        width: "160px",
+                        height: "230px",
+                        objectFit: "cover",
+                        borderRadius: "8px",
+                      }}
+                    />
 
-                {availability === "none" && (
-                  <p
-                    style={{
-                      color: "#64748b",
-                    }}
-                  >
-                    📚 Catalogue Information
-                  </p>
-                )}
+                    {/* =========================
+                        TITLE
+                    ========================== */}
 
-                {/* =====================
-                    BUTTONS
-                ===================== */}
+                    <h3
+                      style={{
+                        marginTop: "15px",
+                        minHeight: "50px",
+                      }}
+                    >
+                      {book.title}
+                    </h3>
 
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
-                    width: "100%",
-                    marginTop: "10px",
-                  }}
-                >
-                  {/* READ NOW */}
+                    {/* =========================
+                        AUTHOR
+                    ========================== */}
 
-                  {availability === "open" &&
-                    readUrl && (
-                      <a
-                        href={readUrl}
-                        target="_blank"
-                        rel="noreferrer"
+                    <p>
+                      👤 {getAuthor(book)}
+                    </p>
+
+                    {/* =========================
+                        YEAR
+                    ========================== */}
+
+                    <p>
+                      📅{" "}
+                      {book.first_publish_year ||
+                        "N/A"}
+                    </p>
+
+                    {/* =========================
+                        EDITIONS
+                    ========================== */}
+
+                    <p>
+                      📚{" "}
+                      {book.edition_count ||
+                        0}{" "}
+                      editions
+                    </p>
+
+                    {/* =========================
+                        AVAILABILITY
+                    ========================== */}
+
+                    {availability ===
+                      "open" && (
+                      <p
                         style={{
-                          textDecoration: "none",
+                          color:
+                            "green",
+                          fontWeight:
+                            "bold",
                         }}
                       >
-                        <button
-                          type="button"
-                          style={{
-                            width: "100%",
-                            padding: "10px",
-                            background:
-                              "#16a34a",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "8px",
-                            cursor: "pointer",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          📖 Read Now
-                        </button>
-                      </a>
+                        🟢 Available to Read
+                      </p>
                     )}
 
-                  {/* BORROW */}
+                    {availability ===
+                      "borrow" && (
+                      <p
+                        style={{
+                          color:
+                            "#2563eb",
+                          fontWeight:
+                            "bold",
+                        }}
+                      >
+                        🔵 Available to Borrow
+                      </p>
+                    )}
 
-                  {availability === "borrow" && (
+                    {availability ===
+                      "unavailable" && (
+                      <p
+                        style={{
+                          color:
+                            "#dc2626",
+                          fontWeight:
+                            "bold",
+                        }}
+                      >
+                        🔴 Currently Unavailable
+                      </p>
+                    )}
+
+                    {availability ===
+                      "none" && (
+                      <p
+                        style={{
+                          color:
+                            "#666",
+                        }}
+                      >
+                        ⚪ No online copy
+                      </p>
+                    )}
+
+                    {/* =========================
+                        OPEN LIBRARY
+                    ========================== */}
+
                     <a
                       href={getOpenLibraryUrl(
                         book
@@ -424,87 +449,96 @@ function ExploreBooks() {
                       target="_blank"
                       rel="noreferrer"
                       style={{
-                        textDecoration: "none",
+                        textDecoration:
+                          "none",
+                        width: "100%",
                       }}
                     >
                       <button
                         type="button"
                         style={{
-                          width: "100%",
-                          padding: "10px",
+                          width:
+                            "100%",
+                          padding:
+                            "10px",
+                          marginTop:
+                            "10px",
+                          border:
+                            "none",
+                          borderRadius:
+                            "8px",
                           background:
-                            "#2563eb",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          fontWeight: "bold",
+                            "#111827",
+                          color:
+                            "white",
+                          cursor:
+                            "pointer",
                         }}
                       >
-                        📚 Borrow on Open Library
+                        🔎 View on Open Library
                       </button>
                     </a>
-                  )}
 
-                  {/* VIEW OPEN LIBRARY */}
+                    {/* =========================
+                        READ BOOK
+                    ========================== */}
 
-                  <a
-                    href={getOpenLibraryUrl(
-                      book
+                    {readUrl && (
+                      <a
+                        href={readUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          textDecoration:
+                            "none",
+                          width: "100%",
+                        }}
+                      >
+                        <button
+                          type="button"
+                          style={{
+                            width:
+                              "100%",
+                            padding:
+                              "10px",
+                            marginTop:
+                              "10px",
+                            border:
+                              "none",
+                            borderRadius:
+                              "8px",
+                            background:
+                              "#2563eb",
+                            color:
+                              "white",
+                            cursor:
+                              "pointer",
+                          }}
+                        >
+                          📖 Read Book
+                        </button>
+                      </a>
                     )}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      textDecoration: "none",
-                    }}
-                  >
-                    <button
-                      type="button"
-                      style={{
-                        width: "100%",
-                        padding: "10px",
-                        background: "#f1f5f9",
-                        color: "#334155",
-                        border:
-                          "1px solid #cbd5e1",
-                        borderRadius: "8px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      🔗 View on Open Library
-                    </button>
-                  </a>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
 
-      {/* =========================
-          INFORMATION
-      ========================= */}
+                  </div>
+                );
+              }
+            )}
 
-      {!loading &&
-        !searched && (
-          <div
-            style={{
-              textAlign: "center",
-              marginTop: "60px",
-              padding: "30px",
-            }}
-          >
-            <h2>
-              📚 Find your next read
-            </h2>
-
-            <p>
-              Search for a title, author,
-              or topic to explore books
-              from Open Library.
-            </p>
           </div>
         )}
+
+      {/* =========================
+          BOTTOM BACK / NEXT
+      ========================== */}
+
+      {books.length > 0 && (
+        <BackNextButtons
+          nextPath="/free-books"
+          nextLabel="Free Books →"
+        />
+      )}
+
     </div>
   );
 }

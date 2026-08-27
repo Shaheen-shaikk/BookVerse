@@ -1,43 +1,72 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+
 import "../styles/navbar.css";
 
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(
+    localStorage.getItem("user")
+  );
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
     navigate("/login");
   };
 
   return (
     <nav className="navbar">
 
-      <Link to="/" className="logo">
+      {/* =========================
+          LOGO
+      ========================== */}
+      <Link
+        to="/"
+        className="logo"
+      >
         📚 Readora
       </Link>
 
+      {/* =========================
+          MAIN NAVIGATION
+      ========================== */}
       <div className="nav-links">
 
         <Link
-          className={location.pathname === "/" ? "active" : ""}
+          className={
+            location.pathname === "/"
+              ? "active"
+              : ""
+          }
           to="/"
         >
           Home
         </Link>
 
         <Link
-          className={location.pathname === "/books" ? "active" : ""}
+          className={
+            location.pathname === "/books"
+              ? "active"
+              : ""
+          }
           to="/books"
         >
           Books
         </Link>
 
         <Link
-          className={location.pathname === "/explore" ? "active" : ""}
+          className={
+            location.pathname === "/explore"
+              ? "active"
+              : ""
+          }
           to="/explore"
         >
           Explore
@@ -45,7 +74,8 @@ function Navbar() {
 
         <Link
           className={
-            location.pathname === "/free-books"
+            location.pathname ===
+            "/free-books"
               ? "active"
               : ""
           }
@@ -54,8 +84,45 @@ function Navbar() {
           Free Books
         </Link>
 
+        {/* =========================
+            BOOKMARKS
+        ========================== */}
+        {user && (
+          <>
+            <Link
+              className={
+                location.pathname ===
+                "/bookmarks"
+                  ? "active"
+                  : ""
+              }
+              to="/bookmarks"
+            >
+              🔖 Bookmarks
+            </Link>
+
+            {/* =========================
+                MY READING
+            ========================== */}
+            <Link
+              className={
+                location.pathname ===
+                "/my-reading"
+                  ? "active"
+                  : ""
+              }
+              to="/my-reading"
+            >
+              📚 My Reading
+            </Link>
+          </>
+        )}
+
       </div>
 
+      {/* =========================
+          RIGHT SIDE
+      ========================== */}
       <div className="nav-right">
 
         <input
@@ -63,14 +130,21 @@ function Navbar() {
           className="search-box"
         />
 
+        {/* =========================
+            LOGGED OUT
+        ========================== */}
         {!user ? (
           <>
             <Link to="/login">
-              <button>Login</button>
+              <button>
+                Login
+              </button>
             </Link>
 
             <Link to="/register">
-              <button>Register</button>
+              <button>
+                Register
+              </button>
             </Link>
           </>
         ) : (
@@ -79,19 +153,29 @@ function Navbar() {
               👋 {user.name}
             </span>
 
+            {/* ADMIN */}
             {user.role === "admin" && (
-              <Link to="/admin">Admin</Link>
+              <Link to="/admin">
+                Admin
+              </Link>
             )}
 
+            {/* AUTHOR */}
             {user.role === "author" && (
-              <Link to="/author">Author</Link>
+              <Link to="/author">
+                Author
+              </Link>
             )}
 
+            {/* PROFILE */}
             <Link to="/profile">
               Profile
             </Link>
 
-            <button onClick={logout}>
+            {/* LOGOUT */}
+            <button
+              onClick={logout}
+            >
               Logout
             </button>
           </>
