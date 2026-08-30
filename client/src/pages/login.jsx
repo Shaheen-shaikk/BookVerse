@@ -10,6 +10,9 @@ function Login() {
     password: "",
   });
 
+  // Show / Hide Password
+  const [showPassword, setShowPassword] = useState(false);
+
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -48,6 +51,7 @@ function Login() {
           gap: "15px",
         }}
       >
+        {/* ================= EMAIL ================= */}
         <input
           type="email"
           name="email"
@@ -57,15 +61,47 @@ function Login() {
           required
         />
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          required
-        />
+        {/* ================= PASSWORD ================= */}
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+          }}
+        >
+          <input
+            type={showPassword ? "text" : "password"}
+            name="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            required
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              paddingRight: "50px",
+            }}
+          />
 
+          {/* Eye Icon */}
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: "absolute",
+              right: "15px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              cursor: "pointer",
+              fontSize: "20px",
+              zIndex: 10,
+              userSelect: "none",
+            }}
+            title={showPassword ? "Hide Password" : "Show Password"}
+          >
+            {showPassword ? "🙈" : "👁️"}
+          </span>
+        </div>
+
+        {/* ================= LOGIN BUTTON ================= */}
         <button type="submit">Login</button>
       </form>
     </div>

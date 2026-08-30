@@ -149,6 +149,7 @@ router.get(
 // ======================
 // LOGIN
 // ======================
+
 router.post("/login", async (req, res) => {
   try {
     const {
@@ -167,12 +168,14 @@ router.post("/login", async (req, res) => {
     }
 
     // Email verification check
-    /*if (!user.isVerified) {
+    /*
+    if (!user.isVerified) {
       return res.status(401).json({
         message:
           "Please verify your email before logging in.",
       });
-    }*/
+    }
+    */
 
     const isMatch = await bcrypt.compare(
       password,
