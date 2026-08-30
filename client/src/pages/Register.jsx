@@ -49,12 +49,17 @@ function Register() {
 
       navigate("/login");
     } catch (err) {
-      alert(
-        err.response?.data?.message ||
-          "Registration Failed"
-      );
-    }
-  };
+  console.log("REGISTER ERROR:", err);
+  console.log("RESPONSE:", err.response);
+  console.log("DATA:", err.response?.data);
+
+  alert(
+    err.response?.data?.message ||
+    err.response?.data?.error ||
+    err.message ||
+    "Registration Failed"
+  );
+}
 
   return (
     <div
