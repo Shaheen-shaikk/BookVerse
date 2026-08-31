@@ -49,17 +49,18 @@ function Register() {
 
       navigate("/login");
     } catch (err) {
-  console.log("REGISTER ERROR:", err);
-  console.log("RESPONSE:", err.response);
-  console.log("DATA:", err.response?.data);
+      console.log("REGISTER ERROR:", err);
+      console.log("RESPONSE:", err.response);
+      console.log("DATA:", err.response?.data);
 
-  alert(
-    err.response?.data?.message ||
-    err.response?.data?.error ||
-    err.message ||
-    "Registration Failed"
-  );
-}
+      alert(
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        "Registration Failed"
+      );
+    }
+  };
 
   return (
     <div
@@ -255,7 +256,6 @@ function Register() {
       </div>
     </div>
   );
-}
 }
 
 export default Register;
