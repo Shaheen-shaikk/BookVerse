@@ -13,7 +13,16 @@ const adminRoutes = require("./routes/adminRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://readora-frontend.onrender.com",
+    ],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 // MongoDB Connection
@@ -34,6 +43,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/upload", uploadRoutes);
+
 // Server
 const PORT = process.env.PORT || 5000;
 
