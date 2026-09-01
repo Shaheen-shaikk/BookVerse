@@ -8,23 +8,15 @@ function Reader() {
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const [readerLoading, setReaderLoading] =
-    useState(true);
+  const [readerLoading, setReaderLoading] = useState(true);
+  const [readerError, setReaderError] = useState("");
 
-  const [readerError, setReaderError] =
-    useState("");
-
-  const [currentFragment, setCurrentFragment] =
-    useState(null);
-
-  const [savedFragment, setSavedFragment] =
-    useState(null);
+  const [currentFragment, setCurrentFragment] = useState(null);
+  const [savedFragment, setSavedFragment] = useState(null);
 
   const readerRef = useRef(null);
 
-  const user = JSON.parse(
-    localStorage.getItem("user")
-  );
+  const user = JSON.parse(localStorage.getItem("user"));
 
   // =====================================================
   // FETCH BOOK
@@ -33,16 +25,13 @@ function Reader() {
   useEffect(() => {
     const fetchBook = async () => {
       try {
-        const res = await API.get(
-          `/books/${id}`
-        );
+        const res = await API.get(`/books/${id}`);
+
+        console.log("📚 BOOK:", res.data);
 
         setBook(res.data);
       } catch (err) {
-        console.error(
-          "Reader Book Error:",
-          err
-        );
+        console.error("Reader Book Error:", err);
       } finally {
         setLoading(false);
       }
@@ -60,26 +49,17 @@ function Reader() {
       return;
     }
 
-    const saveToReadingHistory =
-      async () => {
-        try {
-          await API.put(
-            `/users/history/${id}`,
-            {
-              userId: user.id,
-            }
-          );
+    const saveToReadingHistory = async () => {
+      try {
+        await API.put(`/users/history/${id}`, {
+          userId: user.id,
+        });
 
-          console.log(
-            "🕘 Reading history updated"
-          );
-        } catch (err) {
-          console.error(
-            "Reading History Error:",
-            err
-          );
-        }
-      };
+        console.log("🕘 Reading history updated");
+      } catch (err) {
+        console.error("Reading History Error:", err);
+      }
+    };
 
     saveToReadingHistory();
   }, [id]);
@@ -91,11 +71,9 @@ function Reader() {
   useEffect(() => {
     if (!id) return;
 
-    const storageKey =
-      `readora-reading-position-${id}`;
+    const storageKey = `readora-reading-position-${id}`;
 
-    const saved =
-      localStorage.getItem(storageKey);
+    const saved = localStorage.getItem(storageKey);
 
     if (saved) {
       setSavedFragment(saved);
@@ -112,10 +90,9 @@ function Reader() {
     }
 
     if (book?.readUrl) {
-      const match =
-        book.readUrl.match(
-          /archive\.org\/details\/([^/?#]+)/
-        );
+      const match = book.readUrl.match(
+        /archive\.org\/details\/([^/?#]+)/
+      );
 
       if (match) {
         return match[1];
@@ -126,298 +103,303 @@ function Reader() {
   };
 
   // =====================================================
+  // CHECK IF OPEN LIBRARY BOOK
+  // =====================================================
+
+  const isOpenLibraryBook =
+    book?.source === "openlibrary" ||
+    book?.source === "OpenLibrary" ||
+    book?.source === "open_library";
+
+  // =====================================================
   // LOAD SCRIPT
   // =====================================================
 
   const loadScript = (src) => {
-    return new Promise(
-      (resolve, reject) => {
-        const existing =
-          document.querySelector(
-            `script[src="${src}"]`
-          );
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector(
+        `script[src="${src}"]`
+      );
 
-        if (existing) {
-          resolve();
-          return;
-        }
-
-        const script =
-          document.createElement(
-            "script"
-          );
-
-        script.src = src;
-        script.async = false;
-
-        script.onload = () =>
-          resolve();
-
-        script.onerror = () =>
-          reject(
-            new Error(
-              `Failed to load ${src}`
-            )
-          );
-
-        document.body.appendChild(
-          script
-        );
+      if (existing) {
+        resolve();
+        return;
       }
-    );
+
+      const script = document.createElement("script");
+
+      script.src = src;
+      script.async = false;
+
+      script.onload = () => resolve();
+
+      script.onerror = () =>
+        reject(
+          new Error(`Failed to load ${src}`)
+        );
+
+      document.body.appendChild(script);
+    });
   };
 
   // =====================================================
-  // LOAD BOOKREADER
+  // READER INITIALIZATION
   // =====================================================
 
   useEffect(() => {
     if (!book) return;
 
-    const archiveId =
-      getArchiveId();
+    const archiveId = getArchiveId();
+
+    console.log("📚 BOOK SOURCE:", book.source);
+    console.log("🆔 ARCHIVE ID:", archiveId);
+    console.log("📖 READ URL:", book.readUrl);
+    console.log("🌐 OPEN LIBRARY:", isOpenLibraryBook);
+
+    // =====================================================
+    // OPEN LIBRARY
+    // =====================================================
+
+    if (isOpenLibraryBook) {
+      /*
+       * IMPORTANT:
+       *
+       * Do NOT call:
+       *
+       * /reader/manifest/:archiveId
+       *
+       * Open Library books were causing the
+       * Internet Archive IIIF manifest 500/504.
+       *
+       * The embedded Internet Archive reader
+       * handles the book directly.
+       */
+
+      setReaderLoading(false);
+      setReaderError("");
+
+      return;
+    }
+
+    // =====================================================
+    // NORMAL INTERNET ARCHIVE BOOK
+    // =====================================================
 
     if (!archiveId) {
       setReaderLoading(false);
+      setReaderError(
+        "No Internet Archive reading copy was found."
+      );
+
       return;
     }
 
     let cancelled = false;
 
-    const initializeReader =
-      async () => {
-        try {
-          setReaderLoading(true);
-          setReaderError("");
+    const initializeReader = async () => {
+      try {
+        setReaderLoading(true);
+        setReaderError("");
 
-          // -------------------------------------------------
-          // Load BookReader CSS
-          // -------------------------------------------------
+        // -------------------------------------------------
+        // LOAD BOOKREADER CSS
+        // -------------------------------------------------
 
-          if (
-            !document.getElementById(
-              "readora-bookreader-css"
-            )
-          ) {
-            const link =
-              document.createElement(
-                "link"
-              );
+        if (
+          !document.getElementById(
+            "readora-bookreader-css"
+          )
+        ) {
+          const link = document.createElement("link");
 
-            link.id =
-              "readora-bookreader-css";
+          link.id = "readora-bookreader-css";
+          link.rel = "stylesheet";
+          link.href = "/BookReader/BookReader.css";
 
-            link.rel = "stylesheet";
+          document.head.appendChild(link);
+        }
 
-            link.href =
-              "/BookReader/BookReader.css";
+        // -------------------------------------------------
+        // LOAD DEPENDENCIES
+        // -------------------------------------------------
 
-            document.head.appendChild(
-              link
-            );
-          }
+        await loadScript(
+          "/BookReader/webcomponents-bundle.js"
+        );
 
-          // -------------------------------------------------
-          // Load dependencies in correct order
-          // -------------------------------------------------
+        await loadScript(
+          "/BookReader/jquery-3.js"
+        );
 
-          await loadScript(
-            "/BookReader/webcomponents-bundle.js"
+        await loadScript(
+          "/BookReader/BookReader.js"
+        );
+
+        await loadScript(
+          "/BookReader/plugins/plugin.iiif.js"
+        );
+
+        if (cancelled) return;
+
+        if (!window.BookReader) {
+          throw new Error(
+            "BookReader was not loaded."
           );
+        }
 
-          await loadScript(
-            "/BookReader/jquery-3.js"
+        // -------------------------------------------------
+        // GET IIIF MANIFEST THROUGH BACKEND
+        // -------------------------------------------------
+
+        console.log(
+          "📚 Loading IIIF manifest through Readora backend:",
+          archiveId
+        );
+
+        const response = await API.get(
+          `/reader/manifest/${archiveId}`
+        );
+
+        const manifest = response.data;
+
+        if (!manifest) {
+          throw new Error(
+            "IIIF manifest is empty."
           );
+        }
 
-          await loadScript(
-            "/BookReader/BookReader.js"
+        if (cancelled) return;
+
+        // -------------------------------------------------
+        // CLEAR PREVIOUS READER
+        // -------------------------------------------------
+
+        const container =
+          document.getElementById("BookReader");
+
+        if (!container) {
+          throw new Error(
+            "BookReader container not found."
           );
+        }
 
-          await loadScript(
-            "/BookReader/plugins/plugin.iiif.js"
-          );
+        container.innerHTML = "";
 
-          if (cancelled) return;
+        // -------------------------------------------------
+        // CREATE BOOKREADER
+        // -------------------------------------------------
 
-          if (!window.BookReader) {
-            throw new Error(
-              "BookReader was not loaded."
-            );
-          }
+        const br = new window.BookReader({
+          ui: "embed",
 
-          // -------------------------------------------------
-          // Get Internet Archive IIIF Manifest
-          // -------------------------------------------------
+          el: "#BookReader",
 
-          const manifestUrl =
-            `https://iiif.archive.org/iiif/3/${archiveId}/manifest.json`;
+          bookTitle: book.title,
 
-          console.log(
-            "📚 Loading IIIF manifest:",
-            manifestUrl
-          );
+          bookUrl:
+            `https://archive.org/details/${archiveId}`,
 
-          const response =
-            await fetch(
-              manifestUrl
-            );
+          imagesBaseURL:
+            "/BookReader/images/",
 
-          if (!response.ok) {
-            throw new Error(
-              `IIIF manifest failed: ${response.status}`
-            );
-          }
+          plugins: {
+            iiif: {
+              manifest: manifest,
+            },
+          },
+        });
 
-          const manifest =
-            await response.json();
+        readerRef.current = br;
 
-          if (cancelled) return;
+        // -------------------------------------------------
+        // PAGE CHANGE
+        // -------------------------------------------------
 
-          // -------------------------------------------------
-          // Clear previous reader
-          // -------------------------------------------------
-
-          const container =
-            document.getElementById(
-              "BookReader"
-            );
-
-          if (!container) {
-            throw new Error(
-              "BookReader container not found."
-            );
-          }
-
-          container.innerHTML = "";
-
-          // -------------------------------------------------
-          // CREATE BOOKREADER
-          // -------------------------------------------------
-
-          const br =
-            new window.BookReader({
-              ui: "embed",
-
-              el: "#BookReader",
-
-              bookTitle:
-                book.title,
-
-              bookUrl:
-                `https://archive.org/details/${archiveId}`,
-
-              imagesBaseURL:
-                "/BookReader/images/",
-
-              plugins: {
-                iiif: {
-                  manifest:
-                    manifest,
-                },
-              },
-            });
-
-          readerRef.current = br;
-
-          // -------------------------------------------------
-          // LISTEN FOR PAGE CHANGES
-          // -------------------------------------------------
-
-          if (
-            window.BookReader
-              .eventNames &&
-            window.BookReader
-              .eventNames
-              .fragmentChange
-          ) {
-            br.bind(
-              window.BookReader
-                .eventNames
-                .fragmentChange,
-              () => {
-                try {
-                  const params =
-                    br.paramsFromCurrent();
-
-                  const fragment =
-                    br.fragmentFromParams(
-                      params
-                    );
-
-                  console.log(
-                    "📖 Current BookReader position:",
-                    fragment
-                  );
-
-                  setCurrentFragment(
-                    fragment
-                  );
-                } catch (err) {
-                  console.error(
-                    "Fragment change error:",
-                    err
-                  );
-                }
-              }
-            );
-          }
-
-          // -------------------------------------------------
-          // INITIALIZE
-          // -------------------------------------------------
-
-          br.init();
-
-          // -------------------------------------------------
-          // RESTORE SAVED POSITION
-          // -------------------------------------------------
-
-          if (savedFragment) {
-            setTimeout(() => {
+        if (
+          window.BookReader.eventNames &&
+          window.BookReader.eventNames.fragmentChange
+        ) {
+          br.bind(
+            window.BookReader.eventNames.fragmentChange,
+            () => {
               try {
-                console.log(
-                  "🔖 Restoring saved position:",
-                  savedFragment
-                );
-
                 const params =
-                  br.paramsFromFragment(
-                    savedFragment
-                  );
+                  br.paramsFromCurrent();
 
-                br.updateFromParams(
-                  params
+                const fragment =
+                  br.fragmentFromParams(params);
+
+                console.log(
+                  "📖 Current position:",
+                  fragment
                 );
 
-                setCurrentFragment(
-                  savedFragment
-                );
+                setCurrentFragment(fragment);
               } catch (err) {
                 console.error(
-                  "Could not restore bookmark:",
+                  "Fragment change error:",
                   err
                 );
               }
-            }, 1000);
-          }
+            }
+          );
+        }
 
-          setReaderLoading(false);
-        } catch (err) {
-          console.error(
-            "❌ BookReader Error:",
-            err
+        // -------------------------------------------------
+        // INITIALIZE
+        // -------------------------------------------------
+
+        br.init();
+
+        // -------------------------------------------------
+        // RESTORE SAVED POSITION
+        // -------------------------------------------------
+
+        if (savedFragment) {
+          setTimeout(() => {
+            try {
+              console.log(
+                "🔖 Restoring saved position:",
+                savedFragment
+              );
+
+              const params =
+                br.paramsFromFragment(
+                  savedFragment
+                );
+
+              br.updateFromParams(params);
+
+              setCurrentFragment(
+                savedFragment
+              );
+            } catch (err) {
+              console.error(
+                "Could not restore bookmark:",
+                err
+              );
+            }
+          }, 1000);
+        }
+
+        setReaderLoading(false);
+      } catch (err) {
+        console.error(
+          "❌ BookReader Error:",
+          err
+        );
+
+        if (!cancelled) {
+          setReaderError(
+            err.response?.data?.message ||
+              err.message ||
+              "Unable to load the reader."
           );
 
-          if (!cancelled) {
-            setReaderError(
-              err.message ||
-                "Unable to load the reader."
-            );
-
-            setReaderLoading(false);
-          }
+          setReaderLoading(false);
         }
-      };
+      }
+    };
 
     initializeReader();
 
@@ -427,8 +409,7 @@ function Reader() {
       if (readerRef.current) {
         try {
           if (
-            typeof readerRef.current
-              .cleanup ===
+            typeof readerRef.current.cleanup ===
             "function"
           ) {
             readerRef.current.cleanup();
@@ -443,7 +424,8 @@ function Reader() {
         readerRef.current = null;
       }
     };
-  }, [book, savedFragment]);
+
+  }, [book]);
 
   // =====================================================
   // SAVE BOOKMARK
@@ -474,9 +456,7 @@ function Reader() {
       currentFragment
     );
 
-    setSavedFragment(
-      currentFragment
-    );
+    setSavedFragment(currentFragment);
 
     alert(
       `🔖 Bookmark saved at ${currentFragment}`
@@ -492,8 +472,7 @@ function Reader() {
       return;
     }
 
-    const br =
-      readerRef.current;
+    const br = readerRef.current;
 
     if (!br) {
       alert(
@@ -509,9 +488,7 @@ function Reader() {
           savedFragment
         );
 
-      br.updateFromParams(
-        params
-      );
+      br.updateFromParams(params);
 
       setCurrentFragment(
         savedFragment
@@ -565,6 +542,9 @@ function Reader() {
   const archiveId =
     getArchiveId();
 
+  console.log("📚 FINAL BOOK:", book);
+  console.log("🆔 FINAL ARCHIVE ID:", archiveId);
+
   // =====================================================
   // NO ARCHIVE COPY
   // =====================================================
@@ -605,13 +585,15 @@ function Reader() {
         boxSizing: "border-box",
       }}
     >
-      {/* HEADER */}
+
+      {/* =================================================
+          HEADER
+      ================================================= */}
 
       <div
         style={{
           display: "flex",
-          justifyContent:
-            "space-between",
+          justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "15px",
           gap: "15px",
@@ -645,20 +627,26 @@ function Reader() {
         </Link>
       </div>
 
-      {/* READER */}
+      {/* =================================================
+          READER
+      ================================================= */}
 
       <div
         style={{
           width: "100%",
           height: "80vh",
-          border:
-            "1px solid #ddd",
+          border: "1px solid #ddd",
           borderRadius: "10px",
           overflow: "hidden",
           background: "#111",
           position: "relative",
         }}
       >
+
+        {/* -------------------------------------------------
+            LOADING
+        ------------------------------------------------- */}
+
         {readerLoading && (
           <div
             style={{
@@ -678,6 +666,10 @@ function Reader() {
           </div>
         )}
 
+        {/* -------------------------------------------------
+            ERROR
+        ------------------------------------------------- */}
+
         {readerError && (
           <div
             style={{
@@ -695,16 +687,42 @@ function Reader() {
           </div>
         )}
 
-        <div
-          id="BookReader"
-          style={{
-            width: "100%",
-            height: "100%",
-          }}
-        />
+        {/* =================================================
+            OPEN LIBRARY READER
+        ================================================= */}
+
+        {isOpenLibraryBook ? (
+          <iframe
+            src={
+              `https://archive.org/embed/${archiveId}`
+            }
+            title={`Reading ${book.title}`}
+            style={{
+              width: "100%",
+              height: "100%",
+              border: "none",
+            }}
+            allowFullScreen
+          />
+        ) : (
+          /* =================================================
+             NORMAL INTERNET ARCHIVE BOOK
+          ================================================= */
+
+          <div
+            id="BookReader"
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+          />
+        )}
+
       </div>
 
-      {/* READING POSITION */}
+      {/* =================================================
+          READING POSITION
+      ================================================= */}
 
       <div
         style={{
@@ -736,7 +754,7 @@ function Reader() {
           </p>
         )}
 
-        {/* BOOKMARK BUTTON */}
+        {/* BOOKMARK */}
 
         <button
           type="button"
@@ -745,12 +763,10 @@ function Reader() {
           }
           style={{
             marginTop: "12px",
-            padding:
-              "12px 22px",
+            padding: "12px 22px",
             border: "none",
             borderRadius: "8px",
-            background:
-              "#7c3aed",
+            background: "#7c3aed",
             color: "white",
             cursor: "pointer",
             fontSize: "15px",
@@ -787,12 +803,10 @@ function Reader() {
               }
               style={{
                 marginTop: "10px",
-                padding:
-                  "10px 18px",
+                padding: "10px 18px",
                 border: "none",
                 borderRadius: "8px",
-                background:
-                  "#2563eb",
+                background: "#2563eb",
                 color: "white",
                 cursor: "pointer",
               }}
