@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const axios = require("axios");
 require("dotenv").config();
 
 const app = express();
@@ -15,11 +16,31 @@ const uploadRoutes = require("./routes/uploadRoutes");
 // ===============================
 // CORS
 // ===============================
+const allowedOrigins = [
+  "https://readora-frontend.onrender.com",
+  "http://localhost:5173",
+];
+
 app.use(
   cors({
-    origin: "https://readora-frontend.onrender.com",
+    origin: function (origin, callback) {
+      // Allow requests with no origin
+      // (Postman, curl, server-to-server, etc.)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+
     allowedHeaders: ["Content-Type", "Authorization"],
+
     credentials: true,
   })
 );
@@ -40,6 +61,44 @@ mongoose
 // ===============================
 app.get("/", (req, res) => {
   res.send("🚀 Readora Backend Running");
+});
+
+// ===============================
+// Internet Archive IIIF Manifest
+// ===============================
+app.get("/api/reader/manifest/:archiveId", async (req, res) => {
+  try {
+    const { archiveId } = req.params;
+
+    if (!archiveId) {
+      return res.status(400).json({
+        message: "Archive ID is required",
+      });
+    }
+
+    const manifestUrl =
+      `https://iiif.archive.org/iiif/3/${archiveId}/manifest.json`;
+
+    console.log("📚 Fetching IIIF manifest:", manifestUrl);
+
+    const response = await axios.get(manifestUrl, {
+      timeout: 30000,
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error(
+      "❌ IIIF manifest error:",
+      error.response?.status || error.message
+    );
+
+    res.status(500).json({
+      message: "Unable to load Internet Archive manifest",
+      error:
+        error.response?.data ||
+        error.message,
+    });
+  }
 });
 
 // ===============================
